@@ -54,9 +54,9 @@ if(!S){S={res:{},wrong:{},sub:'tax',yr:{}};
 }
 S.ox=S.ox||{};S.oxw=S.oxw||{};SUBS.forEach(s=>{if(!S.yr[s]||!yearsOf(s).includes(S.yr[s]))S.yr[s]=yearsOf(s).slice(-1)[0]});if(!SUBJ[S.sub])S.sub='tax';
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));save();
-const M={hero:'assets/hero.png',wave:'assets/wave.png',think:'assets/thinking.png',ok:['assets/bright.png','assets/laughing.png','assets/wink.png'],no:['assets/surprised.png','assets/shy.png'],neutral:'assets/neutral.png',cute:'assets/cute.png',serious:'assets/serious.png',gentle:'assets/gentle.png'};
+const M={hero:'hero.png',wave:'wave.png',think:'thinking.png',ok:['bright.png','laughing.png','wink.png'],no:['surprised.png','shy.png'],neutral:'neutral.png',cute:'cute.png',serious:'serious.png',gentle:'gentle.png'};
 const pick=a=>Array.isArray(a)?a[Math.floor(Math.random()*a.length)]:a;
-const N='①②③④',esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const N='①②③④',esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&','<':'<','>':'>'}[c]));
 const mascot=(img,t)=>`<div class="mascot"><img src="${pick(img)}" alt="준혁"><span class="bubble">${t}</span></div>`;
 const exOf=(sub,y)=>EXS.find(e=>e.subject==sub&&e.year==y);
 const keysOf=(sub,y)=>exOf(sub,y).questions.map(q=>sub+'-'+y+'-'+q.no);
