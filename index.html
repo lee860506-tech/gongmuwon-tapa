@@ -1,5 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>준혁이랑 공무원 타파 · 세법개론·회계학·회계원리·한국사 심화</title>
+<title>준혁이랑 공무원 타파 · 세법·회계·한국사·영단어</title>
 <style>
 :root{--p:#8b6fd6;--p2:#b9a4f0;--pl:#f1ebff;--pk:#ffd6e5;--bg:#fff8f2;--ink:#3d3550;--ok:#5bbf8a;--no:#f07a8a}
 *{box-sizing:border-box}body{margin:0;font-family:"Jua","Gaegu","Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:radial-gradient(circle at 10% 0,#ffe9f2 0,transparent 40%),radial-gradient(circle at 100% 20%,#ece4ff 0,transparent 45%),var(--bg);color:var(--ink);min-height:100vh}
@@ -133,4 +133,54 @@ ks.forEach(k=>{const q=ALL[k],w=S.wrong[k];h+=`<div class="card wn ${w.done?'don
 <div style="margin-top:10px"><button class="btn ${w.done?'sub':''}" onclick="S.wrong['${k}'].done=!S.wrong['${k}'].done;save();render()">${w.done?'↺ 다시 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="delete S.wrong['${k}'];save();render()">삭제</button></div></div>`});return h}
 function render(){navR();document.getElementById('app').innerHTML=view=='home'?home():view=='quiz'?(st.ox?oxQuiz():quiz()):view=='mix'?mixView():note()}
 render();
-</script></body></html>
+</script><script src="data/voca.js"></script>
+<script>
+/* ===== 공무원 영단어 ===== */
+const VL=(window.VOCA||[]),VK=v=>v.d+'-'+v.w,VM={};VL.forEach(v=>VM[VK(v)]=v);
+const VDAYS=[...new Set(VL.map(v=>v.d))].sort((a,b)=>a-b);
+S.vc=S.vc||{};S.vw=S.vw||{};S.vq=S.vq||{};S.vday=S.vday||1;S.vsrs=S.vsrs||{};save();
+const DAYMS=864e5,IV=[1,3,7];let vOff=0;const vnow=()=>Date.now()+vOff*DAYMS;
+const vStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const vDue=()=>Object.keys(S.vsrs).filter(k=>VM[k]&&S.vsrs[k].due<=vStart(vnow())+DAYMS-1);
+function vMiss(k,picked){S.vsrs[k]={st:0,due:vStart(vnow())+IV[0]*DAYMS};const w=S.vw[k];S.vw[k]={done:false,t:Date.now(),n:(w?w.n:0)+1,picked:picked||''}}
+function vHit(k){const r=S.vsrs[k];if(!r)return;if(r.due>vStart(vnow())+DAYMS-1)return;r.st++;if(r.st>=IV.length){delete S.vsrs[k];if(S.vw[k])S.vw[k].done=true}else r.due=vStart(vnow())+IV[r.st]*DAYMS}
+const vKeysDay=d=>VL.filter(v=>v.d==d).map(VK);
+function vStat(keys){let kn=0,q=0,qc=0;keys.forEach(k=>{if(S.vc[k]===true)kn++;const r=S.vq[k];if(r){q++;if(r.ok)qc++}});return{kn,q,qc,tot:keys.length,rate:q?Math.round(qc/q*100):0,w:keys.filter(k=>S.vw[k]&&!S.vw[k].done).length}}
+const PN={n:'명',v:'동',a:'형',r:'부'};
+let vst=null;
+function vocaHome(){const d=S.vday,ks=vKeysDay(d),s=vStat(ks),A=vStat(VL.map(VK)),due=vDue().length;
+return`<div class="card hero"><img src="${M.hero}" alt="준혁"><div><span class="tag">하루 50단어, 준혁이랑 같이 외우자 ♡</span><h1>공무원<br>영단어</h1><div>DAY ${VDAYS[0]}~${VDAYS.slice(-1)[0]} · 총 ${VL.length}단어</div><div style="margin-top:10px"><button class="btn" onclick="vGo('flash')">🃏 DAY ${d} 플래시카드</button><button class="btn sub" onclick="vGo('q')">✏ 단어→뜻</button><button class="btn sub" onclick="vGo('r')">🔄 뜻→단어</button><button class="btn sub" onclick="vReview()">⏰ 오늘의 복습 ${due}</button></div></div></div>
+<div class="card">${mascot(due?M.serious:M.wave,due?`오늘 다시 볼 단어가 ${due}개 있어! 먼저 복습하고 가자 ⏰`:A.kn?`지금까지 ${A.kn}단어 알아요! 꾸준함이 최고야 👍`:'DAY 1부터 차근차근! 모르는 단어는 1·3·7일 뒤에 다시 나와 📅')}
+<div class="stats"><div class="stat"><b>${A.kn}/${A.tot}</b>알아요</div><div class="stat"><b>${A.rate}%</b>퀴즈 정답률</div><div class="stat"><b>${A.w}</b>단어 오답</div><div class="stat"><b>${due}</b>오늘의 복습</div></div><div class="bar" style="margin-top:10px"><i style="width:${A.kn/A.tot*100}%"></i></div></div>
+<div class="card">${mascot(M.gentle,'오늘은 DAY 몇? 골라줘!')}<div class="years">${VDAYS.map(x=>{const y=vStat(vKeysDay(x)),u=VL.some(v=>v.d==x&&v.u);return`<div class="yc ${x==d?'on':''}" onclick="S.vday=${x};save();render()"><b>DAY ${x}</b><small><span>알아요 ${y.kn}/${y.tot}</span><span>퀴즈 ${y.q?y.rate+'%':'-'}</span>${y.w?`<span>오답 ${y.w}</span>`:''}${u?'<span>⚠ 정답지 없음</span>':''}</small><div class="bar" style="height:6px;margin-top:4px"><i style="width:${y.kn/y.tot*100}%"></i></div></div>`}).join('')}</div></div>
+<div class="card">${mascot(M.cute,'여러 DAY 섞어서 랜덤으로! 🎲')}<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">범위 <select id="vrA">${VDAYS.map(x=>`<option ${x==1?'selected':''}>${x}</option>`).join('')}</select>~<select id="vrB">${VDAYS.map(x=>`<option ${x==VDAYS.slice(-1)[0]?'selected':''}>${x}</option>`).join('')}</select> 문항 <select id="vrN"><option>10</option><option selected>20</option><option>50</option></select> 유형 <select id="vrM"><option value="q">단어→뜻</option><option value="r">뜻→단어</option><option value="mix">섞기</option><option value="flash">플래시카드</option></select></div><div style="margin-top:10px"><button class="btn" onclick="vRand()">🎲 랜덤 시작</button></div></div>`}
+function vBegin(mode,list,title){if(!list.length){alert('복습할 단어가 없어요!');return}const modes={};list.forEach(k=>modes[k]=mode=='mix'?(Math.random()<.5?'q':'r'):mode);vst={list,i:0,picked:null,flip:false,title,modes,opts:{}};view='voca_run';render();scrollTo(0,0)}
+function vGo(m){const d=S.vday;vBegin(m,m=='flash'?vKeysDay(d):shuffle(vKeysDay(d)),`DAY ${d} ${m=='flash'?'플래시카드':m=='q'?'단어→뜻':'뜻→단어'}`)}
+function vRand(){let a=+vrA.value,b=+vrB.value;if(a>b)[a,b]=[b,a];const m=vrM.value;vBegin(m,shuffle(VL.filter(v=>v.d>=a&&v.d<=b).map(VK)).slice(0,+vrN.value),`🎲 DAY ${a}~${b} 랜덤`)}
+function vReview(){vBegin('mix',shuffle(vDue()),'⏰ 오늘의 복습')}
+function vOpts(k){if(vst.opts[k])return vst.opts[k];const v=VM[k];const near=VL.filter(x=>x!==v&&Math.abs(x.d-v.d)<=2&&x.m!=v.m);let pool=shuffle(near.filter(x=>x.p==v.p));if(pool.length<3)pool=pool.concat(shuffle(near.filter(x=>x.p!=v.p)));const o=shuffle([v].concat(pool.slice(0,3)));return vst.opts[k]=o}
+function vRun(){const {list,i}=vst,k=list[i],v=VM[k],m=vst.modes[k];let h=`<div class="card"><div class="qhead"><b>${vst.title} · ${i+1}/${list.length}</b><span><span class="stag">영단어</span><span class="ytag">DAY ${v.d}</span><span class="pill">${PN[v.p]||''}</span>${v.u?'<span class="pill">⚠ 정답지 없음·미검증</span>':''}</span></div><div class="bar" style="margin:8px 0"><i style="width:${(i+1)/list.length*100}%"></i></div>`;
+if(m=='flash'){h+=vst.picked==null?mascot(vst.flip?M.gentle:M.think,vst.flip?'알았어? 솔직하게 골라줘 😊':'뜻이 떠오르면 카드를 눌러 확인해봐!'):vst.picked=='k'?mascot(M.ok,pick(['역시! 이 단어는 이제 내 거 ✨','굿! 다음 카드 😆'])):mascot(M.no,'괜찮아! 내일 다시 보여줄게 📅');
+h+=`<div class="fc" onclick="vst.flip=!vst.flip;render()" style="cursor:pointer;min-height:180px;display:grid;place-items:center;text-align:center;border-radius:24px;border:3px dashed var(--p2);background:${vst.flip?'#fff0f6':'#f6f0ff'};padding:20px;margin:10px 0"><div><div style="font-size:38px;color:var(--p);font-family:Georgia,serif">${esc(v.w)}</div>${vst.flip?`<div class="vm" style="font-size:20px;margin-top:12px;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif">${esc(v.m)}</div>`:'<div style="color:#a99bc8;margin-top:10px">👆 눌러서 뒤집기</div>'}</div></div>
+<div style="text-align:center"><button class="btn" onclick="vFlash('k')">🙆 알아요</button><button class="btn sub" onclick="vFlash('u')">🤔 모르겠어요</button></div>`}
+else{const o=vOpts(k),p=vst.picked;h+=p==null?mascot(M.think,m=='q'?'이 단어의 뜻은? 🤔':'이 뜻의 단어는? 🤔'):VM[p]===v?mascot(M.ok,pick(['정답! 완전 타파 ✨','굿굿! 😆','역시 준혁이 친구!'])):mascot(M.no,`앗, 정답은 ${esc(m=='q'?v.m:v.w)}! 오답노트에 넣고 내일 다시 보자 📒`);
+h+=`<div class="stem" style="text-align:center;font-size:${m=='q'?'32px;font-family:Georgia,serif;color:var(--p)':'20px'}">${esc(m=='q'?v.w:v.m)}</div>`;
+o.forEach((x,j)=>{const xk=VK(x);let cl='';if(p!=null){if(x===v)cl='ok';else if(xk==p)cl='no'}h+=`<button class="ch ${cl}" ${p!=null?'disabled':''} onclick="vAns('${xk.replace(/'/g,"\\'")}')">${N[j]} ${esc(m=='q'?x.m:x.w)}${p!=null&&m=='r'?` <small style="color:#999">— ${esc(x.m)}</small>`:p!=null&&m=='q'?` <small style="color:#999">— ${esc(x.w)}</small>`:''}</button>`})}
+const done=m=='flash'?vst.picked!=null:vst.picked!=null;
+h+=`<div style="margin-top:12px">${i>0?'<button class="btn sub" onclick="vMv(-1)">← 이전</button>':''}${done||m=='flash'?(i<list.length-1?'<button class="btn" onclick="vMv(1)">다음 →</button>':'<button class="btn" onclick="view=\'voca\';render()">🏁 완료!</button>'):''}</div>`;
+h+=`<div class="grid">${list.map((x,j)=>{const r=S.vq[x],c=S.vc[x];const cls=(vst.modes[x]=='flash'?(c===true?'o':c===false?'x':''):(r?(r.ok?'o':'x'):''));return`<span class="${cls} ${j==i?'cur':''}" onclick="vst.i=${j};vst.picked=null;vst.flip=false;render()">${j+1}</span>`}).join('')}</div></div>`;return h}
+function vFlash(a){const k=vst.list[vst.i];vst.picked=a;vst.flip=true;S.vc[k]=a=='k';if(a=='u')vMiss(k,'모르겠어요');else vHit(k);save();render()}
+function vAns(xk){const k=vst.list[vst.i];vst.picked=xk;const ok=xk==k;S.vq[k]={ok,t:Date.now()};if(ok){vHit(k)}else vMiss(k,VM[xk]?(vst.modes[k]=='q'?VM[xk].m:VM[xk].w):'');save();render()}
+function vMv(d){vst.i+=d;vst.picked=null;vst.flip=false;render();scrollTo(0,0)}
+let vnDay='all';
+const _navR=navR;navR=function(){_navR();const n=document.getElementById('nav'),b=document.createElement('button');b.textContent='📚 영단어';if(view=='voca'||view=='voca_run')b.className='on';b.onclick=()=>{view='voca';render()};n.insertBefore(b,n.lastChild)};
+const _note=note;note=function(){let h=_note();h=h.replace('</select>',`<option value="voca" ${noteSub=='voca'?'selected':''}>영단어</option></select>`);
+if(noteType=='ox'||(noteSub!='all'&&noteSub!='voca'))return h;
+const ws=Object.keys(S.vw).filter(k=>VM[k]&&(vnDay=='all'||VM[k].d==vnDay)).sort((a,b)=>VM[a].d-VM[b].d||VM[a].n-VM[b].n),open=ws.filter(k=>!S.vw[k].done);
+let x=`<div class="card"><div class="qhead"><b>📚 영단어 오답 <span class="pill">복습할 단어 ${open.length}개 · 오늘의 복습 ${vDue().length}</span></b><span>DAY <select id="vnD" onchange="vnDay=this.value=='all'?'all':+this.value;render()"><option value="all">전체</option>${VDAYS.map(d=>`<option value="${d}" ${vnDay==d?'selected':''}>${d}</option>`).join('')}</select></span></div>${open.length?`<button class="btn" onclick="vBegin('mix',shuffle(${JSON.stringify(open).replace(/"/g,"'")}),'📒 단어 오답 다시 풀기')">📒 단어 오답 다시 풀기</button>`:''}<button class="btn sub" onclick="vReview()">⏰ 오늘의 복습</button></div>`;
+ws.forEach(k=>{const v=VM[k],w=S.vw[k],r=S.vsrs[k];const kj=k.replace(/'/g,"\\'");x+=`<div class="card wn vwn ${w.done?'done':''}"><div class="qhead"><b><span class="stag">영단어</span><span class="ytag">DAY ${v.d}</span> <span style="font-family:Georgia,serif;font-size:20px">${esc(v.w)}</span></b><span class="pill">틀린 횟수 ${w.n}${r?' · 다음 복습 '+new Date(r.due).toLocaleDateString('ko-KR'):''}</span></div><div class="stem" style="font-size:16px">${esc(v.m)}${v.u?' <small>(⚠ 미검증)</small>':''}${w.picked?`<br><small style="color:#c77">내 답: ${esc(w.picked)}</small>`:''}</div><button class="btn ${w.done?'sub':''}" onclick="S.vw['${kj}'].done=!S.vw['${kj}'].done;save();render()">${w.done?'↺ 다시 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="delete S.vw['${kj}'];delete S.vsrs['${kj}'];save();render()">삭제</button></div>`});
+return h+x};
+const _render=render;render=function(){['vc','vw','vq','vsrs'].forEach(f=>S[f]=S[f]||{});S.vday=S.vday||1;if(view=='voca'||view=='voca_run'){navR();document.getElementById('app').innerHTML=view=='voca'?vocaHome():vRun()}else _render()};
+render();
+</script>
+</body></html>
