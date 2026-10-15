@@ -1,5 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>준혁이랑 공무원 타파 · 세법·회계·한국사·영단어</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#8b6fd6"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="공무원 타파"><title>준혁이랑 공무원 타파 · 세법·회계·한국사·영단어</title>
 <style>
 :root{--p:#8b6fd6;--p2:#b9a4f0;--pl:#f1ebff;--pk:#ffd6e5;--bg:#fff8f2;--ink:#3d3550;--ok:#5bbf8a;--no:#f07a8a}
 *{box-sizing:border-box}body{margin:0;font-family:"Jua","Gaegu","Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:radial-gradient(circle at 10% 0,#ffe9f2 0,transparent 40%),radial-gradient(circle at 100% 20%,#ece4ff 0,transparent 45%),var(--bg);color:var(--ink);min-height:100vh}
@@ -218,5 +218,24 @@ const _vAns=vAns;vAns=function(xk){const k=vst.list[vst.i];if(vst.modes[k]=='l')
 const _vFl=vFlash;vFlash=function(a){const was=vst.flip;_vFl(a);if(!was&&TTS.ko)say(VM[vst.list[vst.i]].m,'ko-KR')};
 document.addEventListener('click',e=>{const fc=e.target.closest&&e.target.closest('.fc');if(fc&&vst&&vst.flip&&TTS.ko)say(VM[vst.list[vst.i]].m,'ko-KR')});
 render();
+</script>
+<script>
+/* ===== PWA: 서비스워커 + 앱 설치 ===== */
+(function(){const web=/^https?:$/.test(location.protocol);let bip=null;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+window.PWA={get prompt(){return bip},isIOS,standalone,web};
+if(web&&'serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').then(r=>{window.PWA.reg=r}).catch(e=>console.warn('SW',e)));
+ let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloaded||!window.PWA.hadCtl)return;reloaded=true;location.reload()});window.PWA.hadCtl=!!navigator.serviceWorker.controller}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;btn()});
+addEventListener('appinstalled',()=>{bip=null;btn();alert('설치 완료! 홈 화면에서 준혁이를 만나봐 📲')});
+function show(){return !standalone&&web&&(bip||isIOS)}
+window.pwaInstall=async function(){if(bip){bip.prompt();const r=await bip.userChoice;bip=null;btn();return r.outcome}
+ if(isIOS){const d=document.getElementById('iosHint');if(d)d.style.display=d.style.display=='none'?'block':'none'}};
+function btn(){let b=document.getElementById('pwaBtn');const n=document.getElementById('nav');if(!n)return;if(!b){b=document.createElement('button');b.id='pwaBtn';b.textContent='📲 앱 설치';b.onclick=pwaInstall;}
+ if(!b.isConnected)n.appendChild(b);b.style.display=show()?'':'none';
+ let h=document.getElementById('iosHint');if(!h){h=document.createElement('div');h.id='iosHint';h.className='card';h.style.cssText='display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:20;max-width:520px;margin:0 auto';h.innerHTML='📲 <b>아이폰·아이패드에 설치하기</b><br>Safari 아래쪽 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b>를 눌러줘! 그러면 앱처럼 오프라인에서도 쓸 수 있어 😊<div style="text-align:right"><button class="btn sub" onclick="this.closest(\'#iosHint\').style.display=\'none\'">닫기</button></div>';document.body.appendChild(h)}}
+const _r=window.render;window.render=function(){_r.apply(this,arguments);btn()};btn();
+})();
 </script>
 </body></html>
