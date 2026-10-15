@@ -183,4 +183,40 @@ return h+x};
 const _render=render;render=function(){['vc','vw','vq','vsrs'].forEach(f=>S[f]=S[f]||{});S.vday=S.vday||1;if(view=='voca'||view=='voca_run'){navR();document.getElementById('app').innerHTML=view=='voca'?vocaHome():vRun()}else _render()};
 render();
 </script>
+<script>
+/* ===== 영단어 듣기 (Web Speech API) ===== */
+const TK='gtapa_tts';let TTS=Object.assign({rate:1,auto:false,ko:false},JSON.parse(localStorage.getItem(TK)||'{}'));
+const tSave=()=>localStorage.setItem(TK,JSON.stringify(TTS));
+const hasSS=()=>'speechSynthesis' in window&&'SpeechSynthesisUtterance' in window;
+let tUnlocked=false,tVoicesReady=false;
+function tVoice(lang){if(!hasSS())return null;const vs=speechSynthesis.getVoices()||[];const L=lang.toLowerCase(),b=L.split('-')[0];
+return vs.find(v=>(v.lang||'').toLowerCase().replace('_','-')==L)||vs.find(v=>(v.lang||'').toLowerCase().startsWith(b))||null}
+function tNoEn(){return !hasSS()||(tVoicesReady&&!tVoice('en-US'))}
+function say(text,lang){lang=lang||'en-US';if(!hasSS()){tNotice();return false}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=tVoice(lang);if(v)u.voice=v;else if(lang.startsWith('en')&&tVoicesReady){tNotice()}u.lang=lang;u.rate=lang.startsWith('en')?TTS.rate:1;speechSynthesis.speak(u);return true}catch(e){return false}}
+function tNotice(){const n=document.getElementById('ttsn');if(n)n.style.display='block'}
+function tUnlock(){if(tUnlocked||!hasSS())return;tUnlocked=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+document.addEventListener('touchend',tUnlock,{once:true,capture:true});document.addEventListener('click',tUnlock,{once:true,capture:true});
+if(hasSS()){const f=()=>{if((speechSynthesis.getVoices()||[]).length){tVoicesReady=true;if(view=='voca'||view=='voca_run')render()}};f();speechSynthesis.onvoiceschanged=f;setTimeout(()=>{tVoicesReady=true},2500)}
+function tBar(){return`<div class="ttsbar" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;margin:6px 0">🔊 듣기 <label><input type="checkbox" id="ttsAuto" ${TTS.auto?'checked':''} onchange="TTS.auto=this.checked;tSave()"> 자동 재생</label> 속도 <select id="ttsRate" onchange="TTS.rate=+this.value;tSave()"><option value="0.7" ${TTS.rate==0.7?'selected':''}>느리게 0.7</option><option value="1" ${TTS.rate==1?'selected':''}>보통 1.0</option></select><label><input type="checkbox" id="ttsKo" ${TTS.ko?'checked':''} onchange="TTS.ko=this.checked;tSave()"> 뒤집으면 뜻 읽기</label></div><div id="ttsn" class="ctx" style="display:${tNoEn()?'block':'none'}">😢 이 기기/브라우저에서 영어 음성을 찾지 못했어요. 설정 &gt; 접근성(또는 언어)에서 영어 음성을 설치하거나 다른 브라우저(Chrome·Safari)로 열어줘! 듣기 없이도 나머지 기능은 그대로 쓸 수 있어.</div>`}
+const spk=w=>`<button class="btn sub spk" style="padding:6px 12px" onclick="event.stopPropagation();say(${JSON.stringify(w).replace(/"/g,'&quot;')})">🔊</button>`;
+/* patch voca UI */
+const _vH=vocaHome;vocaHome=function(){let h=_vH();h=h.replace(`<button class="btn sub" onclick="vReview()">`,`<button class="btn sub" onclick="vGo('l')">🎧 듣기 퀴즈</button><button class="btn sub" onclick="vReview()">`);
+h=h.replace('<option value="flash">플래시카드</option>','<option value="flash">플래시카드</option><option value="l">🎧 듣기 퀴즈</option>');
+return h.replace('<div class="card">',`<div class="card">${tBar()}</div><div class="card">`)};
+const _vGo=vGo;vGo=function(m){if(m=='l'){const d=S.vday;tUnlock();return vBegin('l',shuffle(vKeysDay(d)),`DAY ${d} 🎧 듣기 퀴즈`)}if(m!='q'&&m!='r'&&m!='flash')return;_vGo(m)};
+let tLast='';
+const _vRun=vRun;vRun=function(){const k=vst.list[vst.i],v=VM[k],m=vst.modes[k];let h;
+if(m=='l'){vst.modes[k]='q';h=_vRun();vst.modes[k]='l';const p=vst.picked;
+ h=h.replace(/<div class="stem" style="text-align:center;font-size:32px[^"]*">[\s\S]*?<\/div>/,`<div class="stem" style="text-align:center"><button class="btn" style="font-size:22px" onclick="say(VM[vst.list[vst.i]].w)">🔊 다시 듣기</button>${p!=null?`<div style="font-size:30px;font-family:Georgia,serif;color:var(--p);margin-top:8px">${esc(v.w)}</div>`:'<div style="color:#a99bc8;margin-top:6px">단어를 듣고 뜻을 골라봐! 🎧</div>'}</div>`);
+ h=h.replace(p==null?'이 단어의 뜻은? 🤔':'@@','잘 듣고 뜻을 골라줘 🎧');}
+else{h=_vRun();if(m=='flash')h=h.replace(/(<div style="font-size:38px;color:var\(--p\);font-family:Georgia,serif">[\s\S]*?<\/div>)/,`$1<div>${spk(v.w)}</div>`);
+ else if(m=='q')h=h.replace(/(<div class="stem" style="text-align:center;font-size:32px[^"]*">[\s\S]*?)(<\/div>)/,`$1 ${spk(v.w)}$2`)}
+h=h.replace('<div class="bar" style="margin:8px 0">',tBar()+'<div class="bar" style="margin:8px 0">');
+const key=vst.title+'|'+vst.i;if(tLast!=key){tLast=key;if(m=='l'||(TTS.auto&&(m=='flash'||m=='q')))setTimeout(()=>say(v.w),60)}
+return h};
+const _vAns=vAns;vAns=function(xk){const k=vst.list[vst.i];if(vst.modes[k]=='l'){vst.modes[k]='q';_vAns(xk);vst.modes[k]='l';render();return}_vAns(xk)};
+const _vFl=vFlash;vFlash=function(a){const was=vst.flip;_vFl(a);if(!was&&TTS.ko)say(VM[vst.list[vst.i]].m,'ko-KR')};
+document.addEventListener('click',e=>{const fc=e.target.closest&&e.target.closest('.fc');if(fc&&vst&&vst.flip&&TTS.ko)say(VM[vst.list[vst.i]].m,'ko-KR')});
+render();
+</script>
 </body></html>
