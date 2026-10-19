@@ -230,7 +230,20 @@ G.HG={
  data:()=>H,act,streak,dkey
 };
 /* ---------- boot ---------- */
-function splash(){if(sessionStorage.getItem('hgSplash'))return;sessionStorage.setItem('hgSplash',1);const s=document.createElement('div');s.id='hgSplash';s.innerHTML=`<img class="lg" src="${LOGO}" alt=""><span class="hg-word">합격온</span><p>${TAGLINE}</p><img class="ms" src="wave.png" alt="준혁">`;document.body.appendChild(s);setTimeout(()=>{s.classList.add('out');setTimeout(()=>s.remove(),500)},RM.matches?300:1100)}
+function splash(){if(sessionStorage.getItem('hgSplash'))return;sessionStorage.setItem('hgSplash',1);
+ const s=document.createElement('div');s.id='hgWelcome';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','hgWT');
+ s.innerHTML=`<i class="sp s1" aria-hidden="true"></i><i class="sp s2" aria-hidden="true"></i><i class="sp s3" aria-hidden="true"></i><i class="sp s4" aria-hidden="true"></i>
+ <div class="w-logo"><img src="${LOGO}" alt="" width="44" height="44"><span class="hg-word">합격온</span></div>
+ <div class="w-text"><h1 id="hgWT">오늘도, 시작해볼까? <span class="hrt" aria-hidden="true">♥</span></h1><p>작은 읽기가 쌓여, 큰 실력이 돼요.</p></div>
+ <div class="w-char"><div class="w-fl"><img src="hg/junhyuk-hello.png" alt="반갑게 인사하는 준혁" width="300" height="797" decoding="async"></div></div>
+ <div class="w-cta"><button type="button" class="w-btn" id="hgStart">시작하기 <span class="ar" aria-hidden="true">→</span></button><small>9급 공무원 국어·영어 독해 학습</small></div>`;
+ document.documentElement.classList.add('hg-wlock');document.body.appendChild(s);
+ let done=false;const go=()=>{if(done)return;done=true;document.documentElement.classList.remove('hg-wlock');scrollTo(0,0);
+  if(RM.matches){s.remove();return}s.classList.add('out');setTimeout(()=>s.remove(),420)};
+ s.querySelector('#hgStart').addEventListener('click',go);
+ s.addEventListener('keydown',e=>{if(e.key=='Escape')go()});
+ setTimeout(()=>{try{s.querySelector('#hgStart').focus({preventScroll:true})}catch(e){}},50);
+ G.hgWelcomeClose=go}
 document.title='합격온 · 9급 공무원 기출·오답노트·영단어·독해';
 headerInit();hookAll();ensureDay();
 if(!/#(dokhae)/.test(location.hash))view='hg';
