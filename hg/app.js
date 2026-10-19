@@ -1,6 +1,10 @@
 /* 합격온 — 앱 셸 (하단 탭 · 홈 대시보드 · 오늘의 체크리스트 · 스트릭 · 타이머 · 북마크 · 마이) */
 (function(){
 const HK='hapgyeokon_v1',TAGLINE='푸는 오늘이, 합격하는 내일로';
+/* 준혁 스티커 (webp + png 대체) */
+const STK={fight:'오늘도 파이팅!',great:'와, 잘했어!!',retry:'아쉽다, 다시 해보자!',focus:'집중해서 끝까지!'};
+const stk=(k,cls='',st='')=>`<img class="hg-stk ${cls}" src="hg/stk/${k}.webp" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='hg/stk/${k}.png'}" alt="준혁: ${STK[k]}" width="560" height="560" decoding="async"${st?` style="${st}"`:''}>`;
+
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 let H=JSON.parse(localStorage.getItem(HK)||'null')||{};
 H.days=H.days||{};H.cl=H.cl||null;H.tpl=H.tpl||[];H.hist=H.hist||{};H.bm=H.bm||{};H.folders=H.folders||['기본'];
@@ -80,12 +84,12 @@ function prog(x){const a=x.auto;if(!a)return'';const d=day();const f=(v,n)=>` <s
 function clPct(){const it=H.cl.items;return it.length?Math.round(it.filter(x=>x.done).length/it.length*100):0}
 function clCheck(fromAct){ensureDay();let ch=false;H.cl.items.forEach(x=>{if(!x.done&&x.auto&&cond(x)){x.done=true;x.autoDone=true;ch=true}});
  if(ch){hSave();if(fromAct)toast('✅ 체크리스트 자동 완료!')}celebrate()}
-function celebrate(){const it=H.cl.items;if(it.length&&it.every(x=>x.done)){day().cl=true;if(!H.cl.celebrated){H.cl.celebrated=true;hSave();confetti(60);toast('🎉 오늘의 체크리스트 100%! 스트릭 +1','big');if(view=='hg')setTimeout(rr,50)}}else{if(H.cl.celebrated){H.cl.celebrated=false;}day().cl=false;hSave()}}
+function celebrate(){const it=H.cl.items;if(it.length&&it.every(x=>x.done)){day().cl=true;if(!H.cl.celebrated){H.cl.celebrated=true;hSave();confetti(60);toast('🎉 오늘의 체크리스트 100%! 스트릭 +1','big');stkPop('great');if(view=='hg')setTimeout(rr,50)}}else{if(H.cl.celebrated){H.cl.celebrated=false;}day().cl=false;hSave()}}
 let clEdit=false;
 function clHTML(){ensureDay();const it=H.cl.items,p=clPct();
  const row=(x,i)=>clEdit?`<li><input class="ed" value="${ea(x.text)}" onchange="HG.clText('${x.id}',this.value)"><button class="hg-ib" onclick="HG.clMove('${x.id}',-1)" ${i==0?'disabled':''} aria-label="위로">↑</button><button class="hg-ib" onclick="HG.clMove('${x.id}',1)" ${i==it.length-1?'disabled':''} aria-label="아래로">↓</button><button class="hg-ib r" onclick="HG.clDel('${x.id}')" aria-label="삭제">×</button></li>`
  :`<li class="${x.done?'done':''}"><button class="hg-ck" onclick="HG.clToggle('${x.id}')" aria-label="완료 표시">${x.done?'✓':''}</button><span class="tx">${ea(x.text)}${x.kind=='auto'?'<span class="tag">자동</span>':x.kind=='tpl'?'<span class="tag">반복</span>':x.kind=='carry'?'<span class="tag">이월</span>':''}${prog(x)}${x.sec?`<span class="meta">⏱ ${fmtM(x.sec+(H.timer.run&&H.timer.run.item==x.id?runningSec():0))}</span>`:''}</span><button class="hg-ib" onclick="HG.tStart('${x.id}')" title="이 항목으로 타이머 시작">⏱</button></li>`;
- return`<div class="card hg-in" id="hgCL"><div class="hg-cl-head">${ring(p,'%')}<div class="t"><h3>오늘의 체크리스트</h3><small style="color:var(--muted)">${it.filter(x=>x.done).length}/${it.length} 완료 · 자정에 새로 시작돼요</small></div><button class="hg-ib" onclick="HG.clEditT()">${clEdit?'완료':'편집'}</button></div>
+ return`<div class="card hg-in" id="hgCL"><div class="hg-cl-head">${ring(p,'%')}${stk(p>=100?'great':'fight','clh')}<div class="t"><h3>오늘의 체크리스트</h3><small style="color:var(--muted)">${it.filter(x=>x.done).length}/${it.length} 완료 · 자정에 새로 시작돼요</small></div><button class="hg-ib" onclick="HG.clEditT()">${clEdit?'완료':'편집'}</button></div>
  ${p==100&&it.length?mascot(M.ok,'우와, 오늘 할 일 전부 끝! 정말 대단해 🎉 스트릭도 지켰어!'):''}
  <ul class="hg-cl">${it.map(row).join('')||'<li><span class="tx" style="color:var(--muted)">할 일을 추가해 볼까요? ✍</span></li>'}</ul>
  <div class="hg-add"><input id="hgNew" placeholder="할 일 추가 (예: 세법 2024 10문제)" onkeydown="if(event.key=='Enter')HG.clAdd()"><select id="hgRep" aria-label="반복"><option value="">한 번</option><option value="daily">매일 반복</option><option value="weekdays">평일 반복</option></select><button class="btn" style="padding:9px 16px!important" onclick="HG.clAdd()">추가</button></div>
@@ -100,7 +104,7 @@ let tI=null;function tTick(){clearInterval(tI);const f=()=>{let el=document.getE
  const s=runningSec();if(r.dur&&s>=r.dur){tStop(true);confetti(40);toast(`⏰ ${Math.round(r.dur/60)}분 집중 완료! 잠깐 쉬어 가자 ☕`,'big');rr();return}
  if(!el){el=document.createElement('div');el.id='hgFT';el.className='hg-ftimer';document.body.appendChild(el)}
  const it=r.item&&H.cl?H.cl.items.find(i=>i.id==r.item):null;const shown=r.dur?r.dur-s:s;
- el.innerHTML=`⏱ ${fmt(shown)}${it?`<span class="n">${ea(it.text)}</span>`:`<span class="n">${r.dur?'집중 타이머':'자유 타이머'}</span>`}<button onclick="HG.tStop()">■ 정지</button>`;
+ el.innerHTML=`${stk('focus','ft')}⏱ ${fmt(shown)}${it?`<span class="n">${ea(it.text)}</span>`:`<span class="n">${r.dur?'집중 타이머':'자유 타이머'}</span>`}<button onclick="HG.tStop()">■ 정지</button>`;
  const c=document.getElementById('hgTChip');if(c)c.querySelector('b').textContent=fmt(shown)};f();tI=setInterval(f,1000)}
 /* ---------- ring / confetti / toast ---------- */
 function ring(p,suf,label){const r=22,c=2*Math.PI*r;return`<svg class="hg-ring" viewBox="0 0 52 52" aria-label="${label||'진행률'} ${p}%"><defs><linearGradient id="hgRG" x1="0" x2="1"><stop offset="0" stop-color="#4C63E7"/><stop offset="1" stop-color="#8B7CF6"/></linearGradient></defs><circle class="bgc" cx="26" cy="26" r="${r}"/><circle class="fg" cx="26" cy="26" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${RM.matches?c*(1-p/100):c}" data-off="${c*(1-p/100)}" transform="rotate(-90 26 26)"/><text x="26" y="27" style="font-size:${String(p).length>2?12:14}px">${p}${suf||''}</text></svg>`}
@@ -146,18 +150,18 @@ function tile(cls,ic,t,s,fn){return`<div class="hg-tile" role="button" tabindex=
 function last7(){const out=[];let k=addDays(dkey(),-6);for(let i=0;i<7;i++){out.push(k);k=addDays(k,1)}return out}
 function hgHome(){ensureDay();clCheck();const d=day(),g=H.set.goal,p=Math.min(100,Math.round(d.q/g*100)),sk=streak(),due=dueVoca().length,ow=openWrong(),bc=bmCount(),run=H.timer.run,hour=new Date().getHours();
  const hi=hour<6?'늦은 밤까지 고생 많아요 🌙':hour<12?'좋은 아침! ☀':hour<18?'오후도 힘내자! 💪':'오늘 하루도 수고했어 ✨';
- let h=`<div class="card hg-hello hg-in"><div style="flex:1;min-width:0"><div class="hg-tagline">${TAGLINE}</div><h2>${hi}<br>오늘도, 합격에 한 걸음 더!</h2><p>국가직 9급 세법·회계·국어·영어 + 한국사 + 영단어</p></div><img src="wave.png" alt="준혁"></div>
+ let h=`<div class="card hg-hello hg-in"><div style="flex:1;min-width:0"><div class="hg-tagline">${TAGLINE}</div><h2>${hi}<br>오늘도, 합격에 한 걸음 더!</h2><p>국가직 9급 세법·회계·국어·영어 + 한국사 + 영단어</p></div>${stk('fight','hello')}</div>
  <div class="hg-chips"><div class="hg-chip goal" role="button" onclick="HG.tab('study')">${ring(p,'%','오늘의 학습')}<div style="min-width:0"><small>오늘의 학습</small><b>${d.q} / ${g}문제</b></div><span style="margin-left:auto;color:var(--sub);font-size:20px">›</span></div>
  <div class="hg-chip" role="button" onclick="HG.go('bm')"><div class="sq c3">${IC.bm}</div><div><small>북마크</small><b>${bc}개</b></div></div>
  <div class="hg-chip timer ${run?'run':''}" id="hgTChip" role="button" onclick="${run?'HG.tStop()':'HG.tStart()'}"><div class="sq c2">${IC.timer}</div><div><small>${run?'타이머 정지':'집중 타이머'}</small><b>${run?fmt(run.dur?run.dur-runningSec():runningSec()):pad(H.set.pomo)+':00'}</b></div></div></div>
  <div class="hg-cta"><button class="btn" onclick="HG.tab('study')">기출 풀기 →</button><button class="btn sub" onclick="HG.tab('note')">＋ 오답 복습하기</button></div>
  <div class="hg-banner streak hg-in"><div class="txt"><h3><span class="num">${sk}</span>일 연속 학습! ${sk?'🔥':'🌱'}</h3><p>${sk>=7?'와 정말 멋져요! 지금처럼만 꾸준히 해요.':sk?'좋아요! 오늘도 이어 가 볼까요?':'오늘 한 문제만 풀어도 스트릭 시작!'}</p></div>
- <div class="hg-days">${last7().map(k=>`<div><i class="${studied(k)?'on':''} ${k==dkey()?'today':''}">${studied(k)?'✓':''}</i>${k==dkey()?'오늘':WD[wdOf(k)]}</div>`).join('')}</div><img src="laughing.png" alt="" style="height:96px;border-radius:50%;bottom:10px;right:10px"></div>
+ <div class="hg-days">${last7().map(k=>`<div><i class="${studied(k)?'on':''} ${k==dkey()?'today':''}">${studied(k)?'✓':''}</i>${k==dkey()?'오늘':WD[wdOf(k)]}</div>`).join('')}</div>${studied(dkey())?stk('great','bn'):stk('fight','bn')}</div>
  <div class="hg-sec"><h3>학습 메뉴</h3><small>필요한 것만 쏙쏙</small></div>
  <div class="hg-tiles">${tile('c1',IC.doc,'기출 풀기','실전처럼 탄탄하게',"HG.tab('study')")}${tile('c2',IC.redo,'오답 복습','틀린 문제를 내 것으로',"HG.tab('note')")}${tile('c3',IC.vari,'변형 문제','다양한 유형으로',"go('var')")}${tile('c4',IC.chart,'분석 보기','내 약점을 정확하게',"HG.tab('my')")}
  ${tile('c5',IC.abc,'영단어','DAY별 · 듣기',"HG.goVoca()")}${tile('c3',IC.read,'독해','지문 분석 · 변형',"HG.goDk()")}${tile('c1',IC.ox,'O/X','빠르게 감 잡기',"go('ox')")}${tile('c6',IC.bm,'북마크',bc+'개 모아 보기',"HG.go('bm')")}</div>
  <div class="hg-sec"><h3>오늘 할 일</h3><small>${new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})}</small></div>${clHTML()}
- <div class="hg-banner review"><div class="txt"><h3 style="color:var(--brand)">오늘의 복습 📖</h3><p style="color:var(--muted)">${due||ow||bc?`영단어 ${due}개 · 오답 ${ow}개 · 북마크 ${bc}개가 기다려요.`:'오늘도 읽는 마음이 내일의 합격을 만들어요.'}</p><button class="btn" onclick="HG.review()">지금 복습하기 →</button></div><img src="thinking.png" alt="" style="height:100px;border-radius:50%;bottom:12px"></div>`;
+ <div class="hg-banner review"><div class="txt"><h3 style="color:var(--brand)">오늘의 복습 📖</h3><p style="color:var(--muted)">${due||ow||bc?`영단어 ${due}개 · 오답 ${ow}개 · 북마크 ${bc}개가 기다려요.`:'오늘도 읽는 마음이 내일의 합격을 만들어요.'}</p><button class="btn" onclick="HG.review()">지금 복습하기 →</button></div>${stk('retry','bn')}</div>`;
  return h}
 function hgMy(){const sk=streak();let best=0,cur=0;Object.keys(H.days).sort().forEach((k,i,a)=>{if(studied(k)){cur=(i&&a[i-1]==addDays(k,-1)&&studied(a[i-1]))?cur+1:1;best=Math.max(best,cur)}});
  const L7=last7(),mx=Math.max(1,...L7.map(k=>(H.days[k]||{}).q||0));const tot=Object.values(H.days).reduce((a,d)=>({q:a.q+d.q,sec:a.sec+d.sec}),{q:0,sec:0});
@@ -179,7 +183,7 @@ function hgMy(){const sk=streak();let best=0,cur=0;Object.keys(H.days).sort().fo
  ${G.pwaInstall?'<div class="hg-row"><span>앱으로 설치</span><button class="hg-ib" onclick="pwaInstall()">설치</button></div>':''}
  <div class="hg-row"><span>개인정보처리방침</span><a href="privacy.html" style="color:var(--brand);font-weight:700">보기 ›</a></div>
  <div class="hg-row"><span>버전</span><small style="color:var(--muted)">합격온 1.0.0 · 모든 기록은 이 기기에만 저장돼요</small></div></div>`}
-function noteTop(){return`<div class="card hg-in" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="flex:1 1 100%">오답노트 바로가기</b><button class="btn sub" onclick="HG.goDk('note')">📖 독해 오답노트 · 사진/스크린샷</button><button class="btn sub" onclick="HG.go('bm')">🔖 북마크 ${bmCount()}</button><button class="btn sub" onclick="HG.goVoca()">📚 영단어</button></div>`}
+function noteTop(){return`<div class="card hg-in" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div style="flex:1 1 100%;display:flex;align-items:center;gap:10px">${stk('retry','nt')}<b>오답노트 바로가기<br><small style="font-weight:600;color:var(--muted)">틀린 문제는 다시 풀면 내 것이 돼요</small></b></div><button class="btn sub" onclick="HG.goDk('note')">📖 독해 오답노트 · 사진/스크린샷</button><button class="btn sub" onclick="HG.go('bm')">🔖 북마크 ${bmCount()}</button><button class="btn sub" onclick="HG.goVoca()">📚 영단어</button></div>`}
 /* ---------- shell ---------- */
 const TABS=[['hg','홈','home'],['study','학습','study'],['note','오답노트','note'],['my','마이','my']];
 function tabOf(){if(view=='hg')return'hg';if(view=='my')return'my';if(view=='note')return'note';if(view=='dk'&&document.querySelector('#app .dk-item, #app .dk-bars'))return'note';if(view=='bm')return'study';return'study'}
@@ -191,6 +195,11 @@ function shell(){document.body.classList.toggle('hg-main',view=='hg'||view=='my'
  const bn=document.getElementById('hgBmNav');if(bn)bn.className=view=='bm'?'on':''}
 function headerInit(){const hd=document.querySelector('header');const lg=hd&&hd.querySelector('.logo');if(lg){lg.innerHTML=`<img src="${LOGO}" alt=""><span class="hg-word">합격온</span>`;lg.onclick=()=>HG.tab('hg');lg.setAttribute('role','button');lg.setAttribute('aria-label','합격온 홈')}
  if(hd&&!document.getElementById('hgHC')){const c=document.createElement('div');c.id='hgHC';c.className='hg-hchips';hd.insertBefore(c,document.getElementById('nav'))}}
+function stkPop(k){if(document.getElementById('hgStkPop'))return;const d=document.createElement('div');d.id='hgStkPop';d.setAttribute('aria-hidden','true');d.innerHTML=stk(k);d.onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.classList.add('out'),RM.matches?1200:1700);setTimeout(()=>d.remove(),RM.matches?1300:2100)}
+const OKS=new Set(M.ok),NOS=new Set(M.no);
+function swapReact(root){(root.querySelectorAll?root.querySelectorAll('.mascot img:not(.hg-stk),.dk-react img:not(.hg-stk)'):[]).forEach(im=>{const f=(im.getAttribute('src')||'').split('/').pop();const k=OKS.has(f)?'great':NOS.has(f)?'retry':null;if(!k)return;
+ im.classList.add('hg-stk','re');im.dataset.k=k;im.alt='준혁: '+STK[k];im.onerror=function(){if(!this.dataset.f){this.dataset.f=1;this.src='hg/stk/'+k+'.png'}};im.src='hg/stk/'+k+'.webp'})}
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType==1){if(n.matches&&n.matches('.mascot img,.dk-react img'))swapReact(n.parentNode);else swapReact(n)}}).observe(document.body,{childList:true,subtree:true});
 const _render=G.render;
 G.render=function(){if(view=='hg'||view=='my'||view=='bm'){navR();document.getElementById('app').innerHTML=view=='hg'?hgHome():view=='my'?hgMy():bmView();if(G.pwaBtnRefresh)G.pwaBtnRefresh()}else{_render.apply(this,arguments);if(view=='note'){const a=document.getElementById('app');a.insertAdjacentHTML('afterbegin',noteTop())}}
  shell();injectBm();animRing();if(view=='bm')bindSwipe();if(H.timer.run)tTick()};
@@ -235,7 +244,7 @@ function splash(){if(sessionStorage.getItem('hgSplash'))return;sessionStorage.se
  s.innerHTML=`<i class="sp s1" aria-hidden="true"></i><i class="sp s2" aria-hidden="true"></i><i class="sp s3" aria-hidden="true"></i><i class="sp s4" aria-hidden="true"></i>
  <div class="w-logo"><img src="${LOGO}" alt="" width="44" height="44"><span class="hg-word">합격온</span></div>
  <div class="w-text"><h1 id="hgWT">오늘도, 시작해볼까? <span class="hrt" aria-hidden="true">♥</span></h1><p>작은 읽기가 쌓여, 큰 실력이 돼요.</p></div>
- <div class="w-char"><div class="w-fl"><img src="hg/junhyuk-hello.png" alt="반갑게 인사하는 준혁" width="300" height="797" decoding="async"></div></div>
+ <div class="w-char"><div class="w-fl">${stk('fight','wel')}</div></div>
  <div class="w-cta"><button type="button" class="w-btn" id="hgStart">시작하기 <span class="ar" aria-hidden="true">→</span></button><small>9급 공무원 국어·영어 독해 학습</small></div>`;
  document.documentElement.classList.add('hg-wlock');document.body.appendChild(s);
  let done=false;const go=()=>{if(done)return;done=true;document.documentElement.classList.remove('hg-wlock');scrollTo(0,0);
