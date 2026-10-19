@@ -172,3 +172,4 @@ img.hg-stk.nt{width:58px;height:58px;flex:none}
 @media (max-width:380px){.hg-cl-head img.hg-stk.clh{display:none}}
 @media (max-width:360px){.hg-hello img.hg-stk.hello{width:104px;height:104px}.hg-banner img.hg-stk.bn{width:100px;height:100px}}
 @media (prefers-reduced-motion:reduce){img.hg-stk,#hgStkPop{animation:none!important}}
+.dk-sets .years{grid-template-columns:1fr!important}.dk-set{text-align:left}.dk-set b{font-size:15px!important;line-height:1.35}.dk-set small,.dk-set small span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
