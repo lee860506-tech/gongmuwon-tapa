@@ -181,8 +181,9 @@ function hgMy(){const sk=streak();let best=0,cur=0;Object.keys(H.days).sort().fo
  <div class="hg-row"><span>🔖 북마크</span><button class="btn sub" style="padding:7px 14px!important" onclick="HG.go('bm')">${bmCount()}개 보기</button></div>
  <div class="hg-row"><span>데이터 백업</span><span><button class="hg-ib" onclick="HG.exportData()">내보내기</button> <label class="hg-ib" style="display:inline-grid;place-items:center">가져오기<input type="file" accept="application/json" style="display:none" onchange="HG.importData(this)"></label></span></div>
  ${G.pwaInstall?'<div class="hg-row"><span>앱으로 설치</span><button class="hg-ib" onclick="pwaInstall()">설치</button></div>':''}
+ ${G.__isApp?'':'<div class="hg-row"><span>📱 안드로이드 앱(APK)</span><a href="https://github.com/lee860506-tech/gongmuwon-tapa/releases/latest/download/hapgyeokon-android.apk" rel="noopener" style="color:var(--brand);font-weight:700">APK 다운로드 ›</a></div>'}
  <div class="hg-row"><span>개인정보처리방침</span><a href="privacy.html" style="color:var(--brand);font-weight:700">보기 ›</a></div>
- <div class="hg-row"><span>버전</span><small style="color:var(--muted)">합격온 1.0.0 · 모든 기록은 이 기기에만 저장돼요</small></div></div>`}
+ <div class="hg-row"><span>버전</span><small style="color:var(--muted)">합격온 2.1.0 · 모든 기록은 이 기기에만 저장돼요</small></div></div>`}
 function noteTop(){return`<div class="card hg-in" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div style="flex:1 1 100%;display:flex;align-items:center;gap:10px">${stk('retry','nt')}<b>오답노트 바로가기<br><small style="font-weight:600;color:var(--muted)">틀린 문제는 다시 풀면 내 것이 돼요</small></b></div><button class="btn sub" onclick="HG.goDk('note')">📖 독해 오답노트 · 사진/스크린샷</button><button class="btn sub" onclick="HG.go('bm')">🔖 북마크 ${bmCount()}</button><button class="btn sub" onclick="HG.goVoca()">📚 영단어</button></div>`}
 /* ---------- shell ---------- */
 const TABS=[['hg','홈','home'],['study','학습','study'],['note','오답노트','note'],['my','마이','my']];
