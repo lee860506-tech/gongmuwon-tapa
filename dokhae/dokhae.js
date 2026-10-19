@@ -3,7 +3,7 @@
 const DKK='gtapa_dokhae_v1';
 let D=JSON.parse(localStorage.getItem(DKK)||'null')||{};
 ['res','wrong','photo'].forEach(k=>{if(!D[k])D[k]=k=='photo'?[]:{}});D.f=D.f||{sub:'all',year:'all',type:'all'};D.best=D.best||0;
-const dSave=()=>{try{localStorage.setItem(DKK,JSON.stringify(D))}catch(e){alert('저장 공간이 가득 찼어요 😢 사진 썸네일이 있는 항목을 몇 개 지워 주세요.')}};
+const dSave=(silent)=>{try{localStorage.setItem(DKK,JSON.stringify(D));return true}catch(e){if(!silent)alert('저장 공간이 가득 찼어요 😢 스크린샷이나 사진이 있는 항목을 몇 개 지워 주세요.');return false}};
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const SUBN={ko:'국어',en:'영어'},REASONS=['근거 못찾음','선지 함정','시간 부족','어휘','해석'];
 const I={ /* 준혁이랑 독해 아이콘 세트 (stroke=currentColor) */
@@ -44,7 +44,12 @@ const CSS=`.dki{width:18px;height:18px;vertical-align:-3px;fill:none;stroke:curr
 .dk-conf{position:fixed;top:-12px;width:10px;height:14px;border-radius:3px;z-index:99;pointer-events:none;animation:dkFall 1.6s ease-in forwards}
 @keyframes dkFall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
 .dk-streak{display:inline-block;background:linear-gradient(90deg,#ffd36e,#ff9fc2);color:#7a3b52;border-radius:999px;padding:3px 10px;font-size:13px}
-.dk-item{border:2px dashed #f3c6d6}.dk-item.done{opacity:.55}
+.dk-item{border:2px dashed #f3c6d6}
+.dk-att{background:#fff8fc;border:2px solid #f7dcea;border-radius:16px;padding:10px;margin-top:8px}.dk-att .dk-row{gap:6px;flex-wrap:wrap}.btn.mini{padding:6px 11px;font-size:13px;margin:2px}.dk-paste{min-height:70px;background:#fff}
+.dk-pz{margin:6px 0;border:2px dashed #ffb3cf;border-radius:12px;padding:9px;font-size:13px;color:#c77a9a;background:#fff;text-align:center;outline:none;min-height:20px;caret-color:transparent}.dk-pz:focus{background:#fff0f6;border-color:#f78fb3}
+.dk-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.dk-shot{position:relative;width:96px}.dk-shot img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:2px solid #eee6ff;cursor:zoom-in;display:block}.dk-shot .x{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:#f07a8a;color:#fff;font-weight:bold;cursor:pointer}.dk-shot .o{width:100%;margin-top:3px;border:0;border-radius:9px;background:#efe8ff;color:var(--p);font-size:12px;padding:3px;cursor:pointer}
+.dk-amsg{font-size:13px;color:#8a7fa6;min-height:16px;margin-top:4px}#dkZoom{position:fixed;inset:0;z-index:100;background:rgba(40,25,60,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:zoom-out;animation:dkSlide .2s ease-out}#dkZoom img{max-width:94vw;max-height:84vh;border-radius:14px;background:#fff}#dkZoom span{color:#fff;font-size:13px}
+.dk-quota{font-size:12.5px;color:#8a7fa6;margin-top:6px}.dk-quota .bar{height:7px;background:#eee6ff;border-radius:6px;overflow:hidden;margin-top:3px}.dk-quota .bar i{display:block;height:100%;background:linear-gradient(90deg,#b9a6f0,#8b6fd6)}.dk-quota.warn{color:#d05a6e;font-weight:bold}.dk-quota.warn .bar i{background:linear-gradient(90deg,#ffb3c9,#f07a8a)}.dk-item.done{opacity:.55}
 .dk-ocrbar{height:10px;background:#eee6ff;border-radius:9px;overflow:hidden;margin:8px 0}.dk-ocrbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p2),var(--p));transition:width .3s}
 .ch.dk-c{font-family:inherit}.dk-en .ch{font-family:Georgia,"Times New Roman",serif}
 @media(prefers-reduced-motion:reduce){.dk-slide,.dk-hop,.dk-shake,.dk-flip,.dk-pop{animation:none!important}.dk-ring .fg{transition:none}}
@@ -100,19 +105,20 @@ function note(){const f=noteF,ids=Object.keys(D.wrong).filter(k=>DM[k]&&(f.sub==
  let h=`<div class="card dk-slide">${mascot(tl.length?M.serious:M.cute,tl.length?`가장 약한 유형은 「${tl[0][0]}」(${tl[0][2]}%)${top&&top[1]?`, 자주 틀린 이유는 「${top[0]}」`:''}! 여기부터 잡자 💪`:'아직 기록이 없어! 독해 문제부터 풀어볼까?')}
  <h3 style="margin:6px 0">${I.chart}유형별 정답률 (약한 순)</h3><div class="dk-bars">${tl.length?tl.map(([k,n,r])=>`<div>${esc(k)} <small style="color:#8a7fa6">${n}회 · ${r}%</small><div class="bar"><i style="width:${r}%;${r<60?'background:linear-gradient(90deg,#ffb3c9,#f07a8a)':''}"></i></div></div>`).join(''):'<small>풀이 기록이 쌓이면 여기 그래프가 생겨요.</small>'}</div>
  <h3 style="margin:12px 0 6px">${I.note}틀린 이유 통계</h3><div class="dk-bars">${REASONS.map(r=>`<div>${r} <small style="color:#8a7fa6">${rc[r]}회</small><div class="bar"><i style="width:${rc[r]/rmax*100}%"></i></div></div>`).join('')}</div></div>
- <div class="card">${filters(f,'n')}<div style="margin-top:8px"><span class="pill">복습할 오답 ${open.length}개</span></div>${open.length?`<button class="btn" onclick="DK.retry('orig')">${I.retry}오답 다시 풀기(원본)</button><button class="btn sub" onclick="DK.retry('var')">${I.shuffle}오답 변형으로 풀기</button>`:''}<button class="btn sub" onclick="DK.go('photo')">${I.camera}사진으로 추가</button></div>`;
+ <div class="card">${filters(f,'n')}<div style="margin-top:8px"><span class="pill">복습할 오답 ${open.length}개</span></div>${open.length?`<button class="btn" onclick="DK.retry('orig')">${I.retry}오답 다시 풀기(원본)</button><button class="btn sub" onclick="DK.retry('var')">${I.shuffle}오답 변형으로 풀기</button>`:''}<button class="btn sub" onclick="DK.go('photo')">${I.camera}새 노트 · 사진으로 추가</button><div id="dkQuota">${qbar()}</div></div>`;
  ids.forEach(k=>{const q=DM[k],w=D.wrong[k];h+=`<div class="card dk-item ${w.done?'done':''}"><div class="qhead"><b><span class="stag">${SUBN[q.sub]}</span><span class="ytag">${q.year} ${q.no}번</span>${esc(q.type)}</b><span class="pill">${w.mode=='orig'?'원본':w.mode=='var'?'변형':'원본+변형'}에서 틀림 · ${w.n||1}회</span></div>
  <div style="margin:6px 0">${REASONS.map(r=>`<button class="dk-chip ${w.reasons.includes(r)?'on':''}" onclick="DK.reason('${k}','${r}')">${r}</button>`).join('')}</div>
  <textarea class="dk-ta" style="min-height:52px" placeholder="메모" oninput="DK.memo('${k}',this.value)">${esc(w.memo||'')}</textarea>
+ ${att('w',k)}
  <details><summary>지문 · 분석 다시 보기</summary><div class="stem" style="font-size:15px;font-weight:bold">${esc(q.prompt)}</div>${q.given?`<div class="dk-given">${esc(q.given)}</div>`:''}<div class="dk-psg ${q.sub=='en'?'en':''}">${esc(q.passage)}</div>${q.choices.map((c,j)=>`<div style="margin:4px 0;${j+1==q.answer?'color:#2f9a64;font-weight:bold':j+1==w.picked?'color:#d05a6e':''}">${N[j]} ${esc(c)}</div>`).join('')}<div class="dk-box" style="margin-top:8px"><p><b>정답 근거</b> “${esc(q.a.근거)}”</p><p><b>함정</b> ${esc(q.a.함정)}</p><p><b>풀이 전략</b> ${esc(q.p.전략)}</p></div></details>
  <div style="margin-top:10px"><button class="btn sub" onclick="DK.start1('${k}')">${I.retry}다시 풀기</button><button class="btn ${w.done?'sub':''}" onclick="DK.done('${k}')">${w.done?'↺ 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="DK.del('${k}')">삭제</button></div></div>`});
  if(D.photo.length){h+=`<div class="card"><b style="color:var(--p)">${I.camera}내가 사진으로 추가한 지문 (${D.photo.length})</b><p style="font-size:13px;color:#8a7fa6;margin:4px 0 0">「텍스트 복사」로 지문을 복사해서 어디든 붙여 넣을 수 있어요.</p></div>`;
-  D.photo.slice().reverse().forEach(p=>{h+=`<div class="card dk-item ${p.done?'done':''}"><div class="qhead"><b><span class="stag">${SUBN[p.sub]||p.sub}</span><span class="pill">${esc(p.type)}</span> 내 지문</b><small>${new Date(p.t).toLocaleDateString('ko-KR')}</small></div>${p.thumb?`<img src="${p.thumb}" alt="지문 사진" style="max-width:160px;border-radius:12px;margin:6px 0;border:2px solid #eee6ff">`:''}
+  D.photo.slice().reverse().forEach(p=>{h+=`<div class="card dk-item ${p.done?'done':''}"><div class="qhead"><b><span class="stag">${SUBN[p.sub]||p.sub}</span><span class="pill">${esc(p.type)}</span> 내 지문</b><small>${new Date(p.t).toLocaleDateString('ko-KR')}</small></div>${p.thumb?`<img src="${p.thumb}" alt="지문 사진" style="max-width:160px;border-radius:12px;margin:6px 0;border:2px solid #eee6ff;cursor:zoom-in" onclick="DK.zoomSrc(this.src)">`:''}
   <div>${REASONS.map(r=>`<button class="dk-chip ${p.reasons.includes(r)?'on':''}" onclick="DK.preason('${p.id}','${r}')">${r}</button>`).join('')}</div>
-  <details ${p.text.length<300?'open':''}><summary>지문 텍스트</summary><textarea class="dk-ta" oninput="DK.pedit('${p.id}','text',this.value)">${esc(p.text)}</textarea></details><textarea class="dk-ta" style="min-height:52px;margin-top:6px" placeholder="메모" oninput="DK.pedit('${p.id}','memo',this.value)">${esc(p.memo||'')}</textarea>
+  <details ${p.text&&p.text.length<300?'open':''}><summary>지문 텍스트</summary><textarea class="dk-ta" oninput="DK.pedit('${p.id}','text',this.value)">${esc(p.text)}</textarea></details><textarea class="dk-ta" style="min-height:52px;margin-top:6px" placeholder="메모" oninput="DK.pedit('${p.id}','memo',this.value)">${esc(p.memo||'')}</textarea>${att('p',p.id)}
   <div style="margin-top:8px"><button class="btn" onclick="DK.copy('${p.id}')">${I.copy}텍스트 복사</button><button class="btn sub" onclick="DK.pdone('${p.id}')">${p.done?'↺ 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="DK.pdel('${p.id}')">삭제</button></div></div>`})}
  return h}
-function photo(){return`<div class="card dk-slide">${mascot(M.think,'시험지나 문제집 지문을 찍어 줘! 글자를 뽑아서 오답노트에 넣어 둘게 📸')}
+function photo(){return`<div class="card dk-slide">${mascot(M.think,'✍ 새 노트! 지문 사진을 찍거나, 번역·해설 글과 스크린샷을 붙여 넣어도 돼 📸📋')}
  <label class="btn" style="display:inline-block">${I.camera}사진 찍기 / 고르기<input id="dkFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="DK.pick(this)"></label>
  ${ocr.thumb?`<div><img src="${ocr.thumb}" alt="미리보기" style="max-width:100%;max-height:260px;border-radius:14px;border:2px solid #eee6ff;margin-top:8px"></div><button class="btn sub" ${ocr.busy?'disabled':''} onclick="DK.runOCR()">${I.search}글자 뽑기 (OCR)</button>`:''}
  <div class="dk-ocrbar" style="display:${ocr.busy?'block':'none'}"><i id="dkOcrP" style="width:${ocr.p}%"></i></div><div id="dkOcrM" style="font-size:13px;color:#8a7fa6">${esc(ocr.msg)}</div>
@@ -121,16 +127,61 @@ function photo(){return`<div class="card dk-slide">${mascot(M.think,'시험지�
  <div class="dk-filter" style="margin-top:8px">과목 ${sel('dkPS','ko',[['ko','국어'],['en','영어']],'')} 유형 ${sel('dkPT','미분류',[['미분류','미분류']].concat(['주제·제목·요지','빈칸','순서','삽입','무관한 문장','내용일치','추론','강화·약화','논리','기타'].map(t=>[t,t])),'')}</div>
  <div style="margin-top:6px">${REASONS.map(r=>`<button class="dk-chip" data-r="${r}" onclick="this.classList.toggle('on')">${r}</button>`).join('')}</div>
  <textarea id="dkPM" class="dk-ta" style="min-height:52px;margin-top:8px" placeholder="메모: 내 답 / 정답 / 헷갈린 점"></textarea>
+ ${att('n','new')}
  <div style="margin-top:8px"><button class="btn" onclick="DK.psave()">📒 오답노트에 저장</button><button class="btn sub" onclick="DK.copyRaw()">${I.copy}텍스트 복사</button><label style="font-size:13px"><input type="checkbox" id="dkKeep" checked> 작은 썸네일도 저장</label></div></div>`}
 function dkView(){if(!DQ)return'<div class="card">📖 독해 데이터를 불러오는 중…</div>';return sub=='run'?quiz():sub=='note'?note():sub=='photo'?photo():home()}
 function rr(){render();if(sub=='home'||sub=='note')animRings()}
 function copyText(t){const done=()=>alert('복사했어요! 📋');if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(t).then(done,()=>fall());else fall();function fall(){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){prompt('아래 내용을 복사하세요',t)}ta.remove()}}
-const tmpl=(s,t,text,memo)=>`[9급 ${s=='en'?'영어':'국어'} 독해 · 내 지문${t&&t!='미분류'?' · '+t:''}]\n\n${text}${memo?'\n\n[메모] '+memo:''}`;
+const tmpl=(s,t,text,memo,paste)=>`[9급 ${s=='en'?'영어':'국어'} 독해 · 내 지문${t&&t!='미분류'?' · '+t:''}]\n\n${text}${memo?'\n\n[메모] '+memo:''}${paste?'\n\n[붙여넣기 메모]\n'+paste:''}`;
 function shrink(file,max,q){return new Promise(res=>{const img=new Image();img.onload=()=>{const s=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',q))};img.src=URL.createObjectURL(file)})}
 let lastFile=null;
 function loadTess(){return new Promise((res,rej)=>{if(window.Tesseract)return res();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>rej(new Error('OCR 엔진을 불러오지 못했어요 (인터넷 연결 필요)'));document.head.appendChild(s)})}
 function setP(p,m){ocr.p=p;ocr.msg=m;const b=document.getElementById('dkOcrP'),t=document.getElementById('dkOcrM');if(b){b.style.width=p+'%';b.parentNode.style.display='block'}if(t)t.textContent=m}
-window.DK={
+/* ── 붙여넣기 메모 + 스크린샷 첨부 ── */
+let draft={paste:'',shots:[]};const RAW={};
+const ICLIP='<svg viewBox="0 0 24 24" class="dki"><rect x="6" y="4" width="12" height="17" rx="2.5"/><path d="M9 4.5h6v3H9z"/><path d="M9 12h6M9 15.5h4"/></svg>',
+ IIMG='<svg viewBox="0 0 24 24" class="dki"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5L19 17"/></svg>';
+function aObj(s,id){if(s=='n')return draft;const o=s=='w'?D.wrong[id]:D.photo.find(x=>x.id==id);if(o){o.paste=o.paste||'';o.shots=o.shots||[]}return o}
+const aid=(s,id)=>s+'_'+String(id).replace(/[^\w-]/g,'_');
+function quota(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||'').length}return{used:n*2,pct:Math.min(100,Math.round(n*2/(5*1024*1024)*100))}}
+function qbar(){const q=quota();return`<div class="dk-quota ${q.pct>=80?'warn':''}">💾 저장 공간 ${q.pct}% 사용 (${(q.used/1048576).toFixed(1)}MB / 약 5MB)${q.pct>=80?' — 거의 꽉 찼어요! 오래된 스크린샷을 지워 주세요 🥺':''}<div class="bar"><i style="width:${q.pct}%"></i></div></div>`}
+function galHTML(s,id){const o=aObj(s,id);if(!o||!o.shots.length)return'<small style="color:#8a7fa6">아직 첨부한 스크린샷이 없어요.</small>';
+ return o.shots.map(sh=>`<div class="dk-shot"><img src="${sh.src}" alt="스크린샷" onclick="DK.zoom('${s}','${id}','${sh.id}')"><button class="x" title="삭제" onclick="DK.shotDel('${s}','${id}','${sh.id}')">×</button><button class="o" onclick="DK.shotOCR('${s}','${id}','${sh.id}')">🔍 OCR</button></div>`).join('')}
+function att(s,id){const o=aObj(s,id),a=aid(s,id);return`<div class="dk-att" id="att_${a}">
+ <div class="dk-row" style="justify-content:space-between"><b style="color:var(--p)">${ICLIP}붙여넣기 메모</b><button class="btn sub mini" onclick="DK.clipText('${s}','${id}')">📋 클립보드에서 붙여넣기</button></div>
+ <textarea class="dk-ta dk-paste" id="pa_${a}" placeholder="번역기·해설·풀이를 길게 눌러 ‘붙여넣기’ 해도 돼요 ✍" oninput="DK.pasteEdit('${s}','${id}',this.value)" onpaste="DK.onPaste(event,'${s}','${id}')">${esc(o.paste)}</textarea>
+ <div class="dk-row" style="justify-content:space-between;margin-top:8px"><b style="color:var(--p)">${IIMG}스크린샷 (${o.shots.length})</b><span><button class="btn sub mini" onclick="DK.clipImg('${s}','${id}')">🖼 이미지 붙여넣기</button><label class="btn sub mini">📂 갤러리<input type="file" accept="image/*" multiple style="display:none" onchange="DK.addShots(this,'${s}','${id}')"></label></span></div>
+ <div class="dk-pz" contenteditable="true" onpaste="DK.onPaste(event,'${s}','${id}')" oninput="this.textContent=''">여기를 누르고 Ctrl+V · 길게 눌러 ‘붙여넣기’로 이미지 붙이기</div>
+ <div class="dk-gal" id="gal_${a}">${galHTML(s,id)}</div><div class="dk-ocrbar" id="ob_${a}" style="display:none"><i></i></div><div class="dk-amsg" id="am_${a}"></div></div>`}
+function amsg(s,id,m){const e=document.getElementById('am_'+aid(s,id));if(e)e.textContent=m}
+function updAtt(s,id){const a=aid(s,id),g=document.getElementById('gal_'+a);if(g)g.innerHTML=galHTML(s,id);const b=document.querySelector('#att_'+a+' b:nth-of-type(1)');const hd=document.querySelectorAll('#att_'+a+' > .dk-row b')[1];if(hd)hd.innerHTML=IIMG+'스크린샷 ('+aObj(s,id).shots.length+')';const qb=document.getElementById('dkQuota');if(qb)qb.innerHTML=qbar()}
+function blobURL(b){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)})}
+async function compress(blob,target){const url=URL.createObjectURL(blob);const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+ let max=1000,q=.72,out='';for(let k=0;k<8;k++){const s=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',q);if(out.length*.75<=target)break;if(q>.5)q-=.08;else max=Math.round(max*.82)}
+ URL.revokeObjectURL(url);return out}
+async function addBlobs(s,id,blobs){const o=aObj(s,id);if(!o)return;blobs=blobs.filter(b=>b&&/^image\//.test(b.type));if(!blobs.length){amsg(s,id,'이미지를 찾지 못했어요 🥲');return}
+ if(quota().pct>=90&&!confirm('저장 공간이 거의 꽉 찼어요(90%↑). 그래도 추가할까요?'))return;
+ amsg(s,id,'이미지 줄이는 중…');let ok=0;
+ for(const b of blobs){try{const src=await compress(b,70000),sh={id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),src,t:Date.now()};RAW[sh.id]=b;o.shots.push(sh);if(s!='n'&&!dSave(true)){o.shots.pop();alert('저장 공간이 가득 찼어요 😢 오래된 스크린샷이나 사진을 지운 뒤 다시 시도해 주세요.');break}ok++}catch(e){amsg(s,id,'이미지를 읽지 못했어요: '+(e.message||e))}}
+ updAtt(s,id);if(ok){amsg(s,id,`스크린샷 ${ok}장 추가! (약 70KB로 줄여 저장)`);if(quota().pct>=80)amsg(s,id,`스크린샷 ${ok}장 추가! ⚠ 저장 공간 ${quota().pct}% — 곧 꽉 차요`)}}
+function zoomOpen(src){let z=document.getElementById('dkZoom');if(!z){z=document.createElement('div');z.id='dkZoom';z.onclick=()=>z.remove();document.body.appendChild(z)}z.innerHTML=`<img src="${src}" alt="확대"><span>탭하면 닫혀요</span>`}
+const ATT={
+ pasteEdit(s,id,v){const o=aObj(s,id);if(!o)return;o.paste=v;if(s!='n')dSave()},
+ async clipText(s,id){const ta=document.getElementById('pa_'+aid(s,id));try{if(!navigator.clipboard||!navigator.clipboard.readText)throw 0;const t=await navigator.clipboard.readText();if(!t){amsg(s,id,'클립보드가 비어 있어요');return}ta.value=(ta.value?ta.value+'\n\n':'')+t;ATT.pasteEdit(s,id,ta.value);amsg(s,id,'붙여넣었어요! 📋')}catch(e){ta&&ta.focus();amsg(s,id,'이 브라우저는 자동 붙여넣기를 막아 두었어요. 칸을 길게 눌러 ‘붙여넣기’를 선택해 줘! 👆')}},
+ async clipImg(s,id){try{if(!navigator.clipboard||!navigator.clipboard.read)throw 0;const items=await navigator.clipboard.read(),bl=[];for(const it of items){const ty=it.types.find(t=>t.startsWith('image/'));if(ty)bl.push(await it.getType(ty))}if(!bl.length){amsg(s,id,'클립보드에 이미지가 없어요. 스크린샷을 복사했는지 확인해 줘!');return}addBlobs(s,id,bl)}catch(e){const pz=document.querySelector('#att_'+aid(s,id)+' .dk-pz');pz&&pz.focus();amsg(s,id,'자동으로 못 읽었어요. 아래 분홍 칸을 길게 눌러 ‘붙여넣기’ 하거나 갤러리에서 골라 줘!')}},
+ onPaste(ev,s,id){const cd=ev.clipboardData;if(!cd)return;const fs=[...cd.items||[]].filter(i=>i.kind=='file'&&i.type.startsWith('image/')).map(i=>i.getAsFile());if(fs.length){ev.preventDefault();addBlobs(s,id,fs)}else if(ev.target.classList.contains('dk-pz')){ev.preventDefault();const t=cd.getData('text');if(t){const ta=document.getElementById('pa_'+aid(s,id));ta.value=(ta.value?ta.value+'\n\n':'')+t;ATT.pasteEdit(s,id,ta.value);amsg(s,id,'글자는 붙여넣기 메모에 넣었어요 📋')}}},
+ addShots(inp,s,id){addBlobs(s,id,[...(inp.files||[])]);inp.value=''},
+ zoom(s,id,sid){const sh=aObj(s,id).shots.find(x=>x.id==sid);if(sh)zoomOpen(sh.src)},
+ zoomSrc(src){zoomOpen(src)},
+ shotDel(s,id,sid){if(!confirm('이 스크린샷을 지울까요?'))return;const o=aObj(s,id);o.shots=o.shots.filter(x=>x.id!=sid);delete RAW[sid];if(s!='n')dSave();updAtt(s,id);amsg(s,id,'지웠어요 🗑')},
+ async shotOCR(s,id,sid){const o=aObj(s,id),sh=o.shots.find(x=>x.id==sid);if(!sh||ATT.busy)return;ATT.busy=true;const a=aid(s,id),bar=document.getElementById('ob_'+a);bar.style.display='block';const setB=(p,m)=>{bar.firstChild.style.width=p+'%';amsg(s,id,m)};setB(3,'OCR 엔진 불러오는 중…');
+  try{await loadTess();const src=RAW[sid]?await compress(RAW[sid],900000):sh.src;const lang=(s=='w'?DM[id]&&DM[id].sub:s=='p'?o.sub:(document.getElementById('dkPS')||{}).value)=='en'?'eng+kor':'kor+eng';
+   const r=await Tesseract.recognize(src,lang,{logger:m=>{if(m.status)setB(Math.round((m.progress||0)*100),({'loading language traineddata':'인식 데이터 내려받는 중','recognizing text':'글자 읽는 중'})[m.status]||'준비 중')}});
+   const t=(r.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();const ta=document.getElementById('pa_'+a);if(t&&ta){ta.value=(ta.value?ta.value+'\n\n':'')+'[스크린샷 글자]\n'+t;ATT.pasteEdit(s,id,ta.value)}setB(100,t?'다 읽었어요! 붙여넣기 메모에 넣어 뒀어 ✍ 틀린 글자는 고쳐 줘':'글자를 찾지 못했어요 🥲')}catch(e){setB(0,'😢 '+(e.message||e))}
+  ATT.busy=false;setTimeout(()=>bar.style.display='none',800)}
+};
+
+window.DK={...ATT,
  go(k){sub=k;if(k!='run')run=null;rr();scrollTo(0,0)},
  setF(fn,k,v){const f=fn=='h'?D.f:noteF;f[k]=(k=='year'&&v!='all')?+v:v;if(fn=='h')dSave();rr()},
  start(m){start(m)},start1(k){start('orig',[DM[k]],'📒 오답 다시 풀기')},
@@ -147,10 +198,10 @@ window.DK={
    ocr.text=(r.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();ocr.msg='완료! 틀린 글자는 직접 고쳐 주세요 ✍';if(!RM.matches)confetti(20)}catch(e){ocr.msg='😢 '+(e.message||e)}
   ocr.busy=false;ocr.p=100;rr()},
  ocrTxt(v){ocr.text=v},
- psave(){const t=document.getElementById('dkTxt').value.trim();if(!t){alert('지문 텍스트가 비어 있어요!');return}const rs=[...document.querySelectorAll('.dk-chip.on[data-r]')].map(b=>b.dataset.r);
-  D.photo.push({id:'ph'+Date.now(),sub:document.getElementById('dkPS').value,type:document.getElementById('dkPT').value,text:t,memo:document.getElementById('dkPM').value,reasons:rs,t:Date.now(),thumb:document.getElementById('dkKeep').checked?ocr.thumb:'',done:false});dSave();ocr={busy:false,p:0,text:'',thumb:'',msg:''};lastFile=null;confetti(30);DK.go('note')},
- copyRaw(){copyText(tmpl(document.getElementById('dkPS').value,document.getElementById('dkPT').value,document.getElementById('dkTxt').value,document.getElementById('dkPM').value))},
- copy(id){const p=D.photo.find(x=>x.id==id);if(p)copyText(tmpl(p.sub,p.type,p.text,p.memo))},
+ psave(){const t=document.getElementById('dkTxt').value.trim();if(!t&&!draft.paste.trim()&&!draft.shots.length&&!ocr.thumb){alert('지문 텍스트나 붙여넣기 메모, 스크린샷 중 하나는 넣어 줘!');return}const rs=[...document.querySelectorAll('.dk-chip.on[data-r]')].map(b=>b.dataset.r);
+  D.photo.push({id:'ph'+Date.now(),sub:document.getElementById('dkPS').value,type:document.getElementById('dkPT').value,text:t,memo:document.getElementById('dkPM').value,reasons:rs,t:Date.now(),thumb:document.getElementById('dkKeep').checked?ocr.thumb:'',paste:draft.paste,shots:draft.shots,done:false});if(!dSave()){D.photo.pop();return}draft={paste:'',shots:[]};ocr={busy:false,p:0,text:'',thumb:'',msg:''};lastFile=null;confetti(30);DK.go('note')},
+ copyRaw(){copyText(tmpl(document.getElementById('dkPS').value,document.getElementById('dkPT').value,document.getElementById('dkTxt').value,document.getElementById('dkPM').value,draft.paste))},
+ copy(id){const p=D.photo.find(x=>x.id==id);if(p)copyText(tmpl(p.sub,p.type,p.text,p.memo,p.paste))},
  pedit(id,k,v){const p=D.photo.find(x=>x.id==id);if(p){p[k]=v;dSave()}},
  preason(id,r){const p=D.photo.find(x=>x.id==id);const i=p.reasons.indexOf(r);i<0?p.reasons.push(r):p.reasons.splice(i,1);dSave();rr()},
  pdone(id){const p=D.photo.find(x=>x.id==id);p.done=!p.done;dSave();rr()},pdel(id){if(confirm('이 지문을 지울까요?')){D.photo=D.photo.filter(x=>x.id!=id);dSave();rr()}}
