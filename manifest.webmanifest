@@ -1,15 +1,19 @@
 {
- "name": "준혁이랑 공무원 타파",
- "short_name": "공무원 타파",
- "description": "국가직 9급 세법·회계 기출, 한국사능력검정 심화, 공무원 영단어 — 준혁이와 함께하는 오프라인 학습",
+ "name": "합격온",
+ "short_name": "합격온",
+ "description": "푸는 오늘이, 합격하는 내일로 — 국가직 9급 세법·회계·국어·영어 기출, 한국사, 영단어, 독해 분석과 오답노트",
  "lang": "ko",
+ "dir": "ltr",
+ "categories": [
+  "education"
+ ],
  "start_url": "./",
  "scope": "./",
  "id": "./",
  "display": "standalone",
  "orientation": "portrait",
- "background_color": "#fff8f2",
- "theme_color": "#8b6fd6",
+ "background_color": "#F8F9FC",
+ "theme_color": "#EEF0FF",
  "icons": [
   {
    "src": "icons/icon-192.png",

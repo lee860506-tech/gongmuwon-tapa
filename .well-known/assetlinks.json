@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.hapgyeokon.app",
+    "sha256_cert_fingerprints": [
+      "11:C7:BF:DF:25:BF:CA:EE:B6:BE:F6:BF:6C:7D:83:D6:63:55:E5:3A:CF:14:FB:C1:D6:9B:E3:9F:4B:D6:2A:42"
+    ]
+  }
+}]

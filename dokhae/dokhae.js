@@ -1,4 +1,4 @@
-/* 준혁이랑 공무원 타파 — 📖 독해 분석오답노트 (국가직 9급 국어·영어) */
+/* 합격온 — 📖 독해 분석오답노트 (국가직 9급 국어·영어) */
 (function(){
 const DKK='gtapa_dokhae_v1';
 let D=JSON.parse(localStorage.getItem(DKK)||'null')||{};
@@ -69,7 +69,7 @@ function confetti(n){if(RM.matches)return;const cs=['#8b6fd6','#ffa6c9','#ffd36e
 const sel=(id,cur,opts,on)=>`<select id="${id}" onchange="${on}">${opts.map(([v,l])=>`<option value="${v}" ${String(cur)==String(v)?'selected':''}>${l}</option>`).join('')}</select>`;
 function filters(f,fn){return`<div class="dk-filter">과목 ${sel(fn+'S',f.sub,[['all','국어+영어'],['ko','국어'],['en','영어']],`DK.setF('${fn}','sub',this.value)`)} 연도 ${sel(fn+'Y',f.year,[['all','전체']].concat(YEARS().map(y=>[y,y])),`DK.setF('${fn}','year',this.value)`)} 유형 ${sel(fn+'T',f.type,[['all','전체']].concat(TYPES().map(t=>[t,t])),`DK.setF('${fn}','type',this.value)`)}</div>`}
 function home(){const f=D.f,L=filt(f),s=stat(L),A=stat(DQ),ko=DQ.filter(q=>q.sub=='ko').length,en=DQ.length-ko,wr=Object.keys(D.wrong).filter(k=>DM[k]&&!D.wrong[k].done).length;
-return`<div class="card dk-hero dk-slide">${I.logo}<div><span class="tag">AI 분석 오답노트 ♡</span><h1>준혁이랑 독해 타파!</h1><div style="font-size:14px">국가직 9급 국어 ${ko} · 영어 ${en} 독해 문항 · 원본+변형+분석</div></div></div>
+return`<div class="card dk-hero dk-slide">${I.logo}<div><span class="tag">지문 분석 오답노트 ♡</span><h1>합격온 독해</h1><div style="font-size:14px">국가직 9급 국어 ${ko} · 영어 ${en} 독해 문항 · 원본+변형+분석</div></div></div>
 <div class="card dk-slide"><div class="dk-row">${ring(A.rate,'전체 정답률')}<div style="flex:1;min-width:180px">${mascot(A.t?M.ok:M.wave,A.t?`지금까지 ${A.t}번 풀었어! 정답률 ${A.rate}% · 최고 연속 ${D.best}개 🔥`:'지문 하나씩 같이 뜯어보자! 근거 문장 찾기가 핵심이야 🔍')}</div></div>
 <h3 style="margin:10px 0 6px">${I.spark}골라서 풀기</h3>${filters(f,'h')}<div style="margin:8px 0 2px;font-size:14px;color:#8a7fa6">선택한 범위: ${L.length}문항 · 풀이 ${s.t} · 정답률 ${s.rate}% · 복습할 오답 ${s.w}</div>
 <div><button class="btn" onclick="DK.start('orig')">${I.book}원본 기출 풀기</button><button class="btn sub" onclick="DK.start('var')">${I.shuffle}변형문제 풀기</button><button class="btn sub" onclick="DK.start('rand')">🎲 랜덤 10</button></div></div>
@@ -88,7 +88,7 @@ if(p!=null){h+=`<div class="dk-react"><img class="${ok?'dk-hop':'dk-shake'}" src
  if(!ok)h+=`<div class="card" style="background:#fff6f9;box-shadow:none;border:2px dashed #f3c6d6;padding:12px"><b style="color:#b0577e">왜 틀렸을까? (여러 개 선택 가능)</b><div>${REASONS.map(r=>`<button class="dk-chip ${w&&w.reasons.includes(r)?'on':''}" onclick="DK.reason('${q.id}','${r}')">${r}</button>`).join('')}</div><textarea class="dk-ta" style="margin-top:8px;min-height:60px" placeholder="메모: 어디서 헷갈렸는지 한 줄로 적어두기" oninput="DK.memo('${q.id}',this.value)">${esc(w?w.memo:'')}</textarea></div>`;
  h+=run.mode=='var'?`<div class="dk-box dk-flip"><b>정답 ${N[d.answer-1]}</b><p>${esc(d.exp)}</p></div>${anal(q,true)}`:anal(q)}
 h+=`<div style="display:flex;justify-content:space-between;margin-top:12px"><button class="btn sub" ${run.i==0?'disabled':''} onclick="DK.mv(-1)">◀ 이전</button><button class="btn sub" onclick="DK.go('home')">목록</button>${run.i<run.list.length-1?`<button class="btn" onclick="DK.mv(1)">다음 ▶</button>`:`<button class="btn" onclick="DK.go('note')">📒 오답노트</button>`}</div></div>`;return h}
-function anal(q,noVar){const a=q.a,p=q.p;const tabs=[['a',I.search+'AI 분석'],['p',I.target+'시험 포인트']].concat(q.sub=='en'?[['w',I.abc+'어휘·해석']]:[]).concat(noVar?[]:[['v',I.shuffle+'변형 문제']]);if(noVar&&tab=='v')tab='a';
+function anal(q,noVar){const a=q.a,p=q.p;const tabs=[['a',I.search+'지문 분석'],['p',I.target+'시험 포인트']].concat(q.sub=='en'?[['w',I.abc+'어휘·해석']]:[]).concat(noVar?[]:[['v',I.shuffle+'변형 문제']]);if(noVar&&tab=='v')tab='a';
 let body='';if(tab=='a')body=`<p><b>정답 ${N[q.answer-1]}</b></p><p><b>핵심 요지</b><br>${esc(a.요지)}</p><p><b>글의 구조</b><br>${esc(a.구조)}</p><p><b>정답 근거 문장</b><br>“${esc(a.근거)}”</p><p><b>오답 함정 해설</b><br>${esc(a.함정)}</p>`;
 else if(tab=='p')body=`<p><b>출제자 의도</b><br>${esc(p.의도)}</p><p><b>풀이 전략</b><br>${esc(p.전략)}</p><p><b>시그널 단어</b><br>${esc(p.시그널).split(/,\s*/).map(x=>`<span class="pill" style="display:inline-block;margin:2px">${x}</span>`).join(' ')}</p>`;
 else if(tab=='w')body=`<p><b>핵심 어휘·구문</b><br>${esc(q.voc).split(' / ').join('<br>')}</p><p><b>한줄 해석</b><br>${esc(q.tr)}</p>`;
@@ -182,6 +182,12 @@ const ATT={
 };
 
 window.DK={...ATT,
+ open(k){view='dk';sub=k||'home';run=null;loadData(()=>{rr();scrollTo(0,0)});rr()},
+ load(cb){loadData(()=>cb(DQ,DM))},
+ curId(){return view=='dk'&&sub=='run'&&run&&run.list?run.list[run.i]:null},
+ curMode(){return run&&run.mode},
+ startIds(ids,m,title){loadData(()=>{view='dk';const L=ids.map(i=>DM[i]).filter(Boolean);start(m||'orig',L,title||'🔖 북마크 독해')})},
+ stats(){return{res:D.res,wrong:D.wrong,photo:D.photo}},
  go(k){sub=k;if(k!='run')run=null;rr();scrollTo(0,0)},
  setF(fn,k,v){const f=fn=='h'?D.f:noteF;f[k]=(k=='year'&&v!='all')?+v:v;if(fn=='h')dSave();rr()},
  start(m){start(m)},start1(k){start('orig',[DM[k]],'📒 오답 다시 풀기')},
