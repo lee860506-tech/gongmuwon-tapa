@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="합격온 로고">
+<defs>
+<linearGradient id="hgA" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4C63E7"/><stop offset="1" stop-color="#8B7CF6"/></linearGradient>
+<linearGradient id="hgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#EEE9FF"/></linearGradient>
+<linearGradient id="hgC" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A99BFF"/><stop offset="1" stop-color="#6E7CF2"/></linearGradient>
+</defs>
+<!-- book back cover -->
+<path d="M14 40c13-6 27-6 40 2v56c-13-8-27-8-40-2z" fill="url(#hgA)"/>
+<path d="M54 42c11-8 24-9 36-4v56c-12-5-25-4-36 4z" fill="url(#hgA)" opacity=".92"/>
+<!-- pages -->
+<path d="M20 44c11-4 22-3 32 3v46c-10-6-21-7-32-3z" fill="url(#hgB)"/>
+<path d="M56 47c9-6 19-7 29-4v46c-10-3-20-2-29 4z" fill="#F4F1FF"/>
+<path d="M26 56c7-2 14-1 21 2M26 66c7-2 14-1 21 2M26 76c7-2 14-1 21 2" stroke="#C7B7FF" stroke-width="3" stroke-linecap="round" fill="none"/>
+<!-- speech bubble -->
+<path d="M66 24h32a12 12 0 0 1 12 12v16a12 12 0 0 1-12 12H84l-11 9 2-9h-9a12 12 0 0 1-12-12V36a12 12 0 0 1 12-12z" fill="url(#hgC)" stroke="#fff" stroke-width="3"/>
+<circle cx="72" cy="44" r="3.6" fill="#fff"/><circle cx="82" cy="44" r="3.6" fill="#fff"/><circle cx="92" cy="44" r="3.6" fill="#fff"/>
+<!-- sparkle -->
+<path d="M44 6c1.6 7 3.4 8.8 10.4 10.4C47.4 18 45.6 19.8 44 26.8 42.4 19.8 40.6 18 33.6 16.4 40.6 14.8 42.4 13 44 6z" fill="#8B7CF6"/>
+<path d="M106 8c.8 3.6 1.7 4.5 5.3 5.3-3.6.8-4.5 1.7-5.3 5.3-.8-3.6-1.7-4.5-5.3-5.3 3.6-.8 4.5-1.7 5.3-5.3z" fill="#A7D8FF"/>
+</svg>
