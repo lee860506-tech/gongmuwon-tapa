@@ -116,7 +116,7 @@ function bmMeta(id){const [t,k]=[id.slice(0,2),id.slice(3)];
  if(t=='mc'){const q=ALL[k];return q?{kind:'객관식',sub:q.sub,subN:SUBJ[q.sub],year:q.year,yl:ys(q.sub,q.year),label:`${q.no}번`,topic:q.topic}:null}
  if(t=='ox'){const o=OXM[k];return o?{kind:'OX',sub:o.sub,subN:SUBJ[o.sub],year:o.year,yl:ys(o.sub,o.year),label:`${o.no}번 OX`,topic:o.topic}:null}
  if(t=='vc'){const v=VM[k];return v?{kind:'단어',sub:'voca',subN:'영단어',year:null,yl:'DAY '+v.d,label:v.w,topic:''}:null}
- if(t=='dk'&&DKM[k]&&DKM[k].src){const q=DKM[k];return{kind:'독해',sub:'dken',subN:'영어 학원자료',year:q.year,yl:String(q.year),label:q.no+'번',topic:q.type}}
+ if(t=='dk'&&DKM[k]&&DKM[k].src){const q=DKM[k];return{kind:'독해',sub:q.sub=='ko'?'dkko':'dken',subN:q.sub=='ko'?'국어 학원자료':'영어 학원자료',year:q.year,yl:String(q.year),label:q.no+'번',topic:q.type}}
  if(t=='dk'){const q=DKM[k];const [s,y,n]=k.split('-');return{kind:'독해',sub:'dk'+s,subN:s=='en'?'독해(영어)':'독해(국어)',year:+y,yl:y,label:n+'번',topic:q?q.type:''}}
  return null}
 let DKM={};function dkReady(cb){if(G.DK&&G.DK.load)G.DK.load((DQ,DM)=>{DKM=DM||{};cb&&cb()});else cb&&cb()}
