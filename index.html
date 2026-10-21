@@ -133,10 +133,10 @@ ks.forEach(k=>{const q=ALL[k],w=S.wrong[k];h+=`<div class="card wn ${w.done?'don
 <div style="margin-top:10px"><button class="btn ${w.done?'sub':''}" onclick="S.wrong['${k}'].done=!S.wrong['${k}'].done;save();render()">${w.done?'↺ 다시 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="delete S.wrong['${k}'];save();render()">삭제</button></div></div>`});return h}
 function render(){navR();document.getElementById('app').innerHTML=view=='home'?home():view=='quiz'?(st.ox?oxQuiz():quiz()):view=='mix'?mixView():note()}
 render();
-</script><script src="data/voca.js"></script><script src="data/voca_extra.js" onerror="0"></script>
+</script><script src="data/voca.js"></script><script src="data/voca_extra.js" onerror="0"></script><script src="data/voca_extra2.js" onerror="0"></script>
 <script>
 /* ===== 공무원 영단어 ===== */
-const DLB=x=>x>100?'막강어휘 '+(x-100):'DAY '+x;const VL=(window.VOCA||[]),VK=v=>v.d+'-'+v.w,VM={};VL.forEach(v=>VM[VK(v)]=v);
+const DLB=x=>x>500?'생활영어 '+(x-500):x>400?'매일영단어 '+(x-400):x>300?'어원VOCA '+(x-300):x>200?'주간어휘 '+(x-200):x>100?'막강어휘 '+(x-100):'DAY '+x;const VL=(window.VOCA||[]),VK=v=>v.d+'-'+v.w,VM={};VL.forEach(v=>VM[VK(v)]=v);
 const VDAYS=[...new Set(VL.map(v=>v.d))].sort((a,b)=>a-b);
 S.vc=S.vc||{};S.vw=S.vw||{};S.vq=S.vq||{};S.vday=S.vday||1;S.vsrs=S.vsrs||{};save();
 const DAYMS=864e5,IV=[1,3,7];let vOff=0;const vnow=()=>Date.now()+vOff*DAYMS;
