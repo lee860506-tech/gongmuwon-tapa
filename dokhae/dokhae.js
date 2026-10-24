@@ -123,7 +123,7 @@ function note(){const f=noteF,ids=Object.keys(D.wrong).filter(k=>DM[k]&&srcOk(f,
   <div style="margin-top:8px"><button class="btn" onclick="DK.copy('${p.id}')">${I.copy}텍스트 복사</button><button class="btn sub" onclick="DK.pdone('${p.id}')">${p.done?'↺ 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="DK.pdel('${p.id}')">삭제</button></div></div>`})}
  return h}
 function photo(){return`<div class="card dk-slide">${mascot(M.think,'✍ 새 노트! 지문 사진을 찍거나, 번역·해설 글과 스크린샷을 붙여 넣어도 돼 📸📋')}
- <label class="btn" style="display:inline-block">${I.camera}사진 찍기 / 고르기<input id="dkFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="DK.pick(this)"></label>
+ <label class="btn" style="display:inline-block">${I.camera}촬영<input id="dkFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="DK.pick(this)"></label><label class="btn sub" style="display:inline-block">🖼 갤러리<input id="dkGal" type="file" accept="image/*" style="display:none" onchange="DK.pick(this)"></label>
  ${ocr.thumb?`<div><img src="${ocr.thumb}" alt="미리보기" style="max-width:100%;max-height:260px;border-radius:14px;border:2px solid #eee6ff;margin-top:8px"></div><button class="btn sub" ${ocr.busy?'disabled':''} onclick="DK.runOCR()">${I.search}글자 뽑기 (OCR)</button>`:''}
  <div class="dk-ocrbar" style="display:${ocr.busy?'block':'none'}"><i id="dkOcrP" style="width:${ocr.p}%"></i></div><div id="dkOcrM" style="font-size:13px;color:#8a7fa6">${esc(ocr.msg)}</div>
  <p style="font-size:13px;color:#8a7fa6">처음 한 번은 한국어·영어 인식 데이터(약 10~20MB)를 내려받느라 시간이 걸려요. 사진은 휴대폰 안에서만 처리되고 서버로 보내지 않아요.</p></div>
