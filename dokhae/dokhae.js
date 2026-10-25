@@ -124,7 +124,7 @@ function note(){const f=noteF,ids=Object.keys(D.wrong).filter(k=>DM[k]&&srcOk(f,
  return h}
 function photo(){return`<div class="card dk-slide">${mascot(M.think,'✍ 새 노트! 지문 사진을 찍거나, 번역·해설 글과 스크린샷을 붙여 넣어도 돼 📸📋')}
  <label class="btn" style="display:inline-block">${I.camera}촬영<input id="dkFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="DK.pick(this)"></label><label class="btn sub" style="display:inline-block">🖼 갤러리<input id="dkGal" type="file" accept="image/*" style="display:none" onchange="DK.pick(this)"></label>
- ${ocr.thumb?`<div><img src="${ocr.thumb}" alt="미리보기" style="max-width:100%;max-height:260px;border-radius:14px;border:2px solid #eee6ff;margin-top:8px"></div><button class="btn sub" ${ocr.busy?'disabled':''} onclick="DK.runOCR()">${I.search}글자 뽑기 (OCR)</button>`:''}
+ ${ocr.thumb?`<div><img src="${ocr.thumb}" alt="미리보기" style="max-width:100%;max-height:260px;border-radius:14px;border:2px solid #eee6ff;margin-top:8px"></div><button class="btn sub" ${ocr.busy?'disabled':''} onclick="DK.rot()" aria-label="사진 90도 회전">↻ 회전</button><button class="btn sub" ${ocr.busy?'disabled':''} onclick="DK.runOCR()">${I.search}글자 뽑기 (OCR)</button>`:''}
  <div class="dk-ocrbar" style="display:${ocr.busy?'block':'none'}"><i id="dkOcrP" style="width:${ocr.p}%"></i></div><div id="dkOcrM" style="font-size:13px;color:#8a7fa6">${esc(ocr.msg)}</div>
  <p style="font-size:13px;color:#8a7fa6">처음 한 번은 한국어·영어 인식 데이터(약 10~20MB)를 내려받느라 시간이 걸려요. 사진은 휴대폰 안에서만 처리되고 서버로 보내지 않아요.</p></div>
  <div class="card"><b style="color:var(--p)">지문 텍스트 (직접 고쳐도 돼요)</b><textarea id="dkTxt" class="dk-ta" style="min-height:180px" placeholder="OCR 결과가 여기에 들어와요. 직접 입력해도 돼요." oninput="DK.ocrTxt(this.value)">${esc(ocr.text)}</textarea>
@@ -202,6 +202,7 @@ window.DK={...ATT,
  memo(k,v){if(D.wrong[k]){D.wrong[k].memo=v;dSave()}},
  done(k){D.wrong[k].done=!D.wrong[k].done;dSave();rr()},del(k){if(confirm('이 오답을 지울까요?')){delete D.wrong[k];dSave();rr()}},
  pick(inp){const f=inp.files&&inp.files[0];if(!f)return;lastFile=f;shrink(f,520,.6).then(u=>{ocr.thumb=u;ocr.msg='「글자 뽑기」를 눌러 주세요';rr()})},
+ rot(){if(!lastFile||ocr.busy)return;const u=URL.createObjectURL(lastFile),img=new Image();img.onload=()=>{const k=Math.min(1,2400/Math.max(img.width,img.height)),w=Math.round(img.width*k),h=Math.round(img.height*k),c=document.createElement('canvas');c.width=h;c.height=w;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,h,w);x.translate(h,0);x.rotate(Math.PI/2);x.drawImage(img,0,0,w,h);URL.revokeObjectURL(u);c.toBlob(b=>{if(!b)return;lastFile=b;shrink(b,520,.6).then(t=>{ocr.thumb=t;rr()})},'image/jpeg',.92)};img.onerror=()=>URL.revokeObjectURL(u);img.src=u},
  async runOCR(){if(!lastFile||ocr.busy)return;ocr.busy=true;setP(2,'OCR 엔진 불러오는 중…');rr();
   try{await loadTess();const big=await shrink(lastFile,2200,.92);const lang=document.getElementById('dkPS')?.value=='en'?'eng+kor':'kor+eng';
    const r=await Tesseract.recognize(big,lang,{logger:m=>{if(m.status)setP(Math.round((m.progress||0)*100),({'loading language traineddata':'인식 데이터 내려받는 중','recognizing text':'글자 읽는 중','initializing api':'준비 중','loading tesseract core':'엔진 준비 중'})[m.status]||m.status)}});

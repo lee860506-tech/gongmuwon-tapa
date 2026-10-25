@@ -41,7 +41,7 @@ function list(){
 function edView(){const e=PM.ed;
  let h=`<div class="card">${mascot(M.think,e.img?'S펜이면 손바닥은 무시해요 ✍ 두 손가락으로 확대·이동!':'먼저 사진을 찍거나 골라줘 📷')}`;
  if(!e.img)h+=`<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" style="display:inline-block">📷 촬영<input type="file" accept="image/*" capture="environment" style="display:none" onchange="PM.pick(this)"></label><label class="btn sub" style="display:inline-block">🖼 갤러리<input type="file" accept="image/*" style="display:none" onchange="PM.pick(this)"></label></div>`;
- else h+=`<div class="pm-tool">${COL.map((c,i)=>`<button class="dot ${e.tool=='pen'&&e.col==i?'on':''}" onclick="PM.tool('pen',${i})" aria-label="펜 ${i+1}"><i style="background:${c}"></i></button>`).join('')}<button class="${e.tool=='hl'?'on':''}" onclick="PM.tool('hl')">🖍 형광</button><button class="${e.tool=='er'?'on':''}" onclick="PM.tool('er')">🧽 지우개</button><button onclick="PM.undo()" aria-label="실행취소">↶</button><button onclick="PM.fit()" aria-label="화면 맞춤">🔍</button></div>
+ else h+=`<div class="pm-tool">${COL.map((c,i)=>`<button class="dot ${e.tool=='pen'&&e.col==i?'on':''}" onclick="PM.tool('pen',${i})" aria-label="펜 ${i+1}"><i style="background:${c}"></i></button>`).join('')}<button class="${e.tool=='hl'?'on':''}" onclick="PM.tool('hl')">🖍 형광</button><button class="${e.tool=='er'?'on':''}" onclick="PM.tool('er')">🧽 지우개</button><button onclick="PM.undo()" aria-label="실행취소">↶</button><button onclick="PM.rot()" aria-label="사진 90도 회전">↻</button><button onclick="PM.fit()" aria-label="화면 맞춤">🔍</button></div>
  <div class="pm-stage" id="pmStage"><div class="pm-z" id="pmZ"><canvas id="pmBase"></canvas><canvas id="pmInk"></canvas></div></div>`;
  h+=`<div class="pm-f"><select onchange="PM.v('sub',this.value)">${SUBS.map(s=>`<option ${e.sub==s?'selected':''}>${s}</option>`).join('')}</select>
  <input placeholder="태그 (예: 부가세, 관계대명사)" value="${ea(e.tags)}" oninput="PM.v('tags',this.value)">
@@ -89,16 +89,18 @@ G.PM={
  open(){view='note';noteType='pm';PM.ed=null;rr()},
  add(){PM.ed={id:null,img:null,blob:null,strokes:[],sub:'국어',tags:'',memo:'',gpt:'',chk:true,tool:'pen',col:0};Z={s:1,x:0,y:0};penSeen=false;rr()},
  async edit(id){const m=L.find(x=>x.id==id);if(!m)return;let img=null;try{img=await blobImg(m.photo)}catch(e){alert('사진을 불러오지 못했어요 😢');return}
-  PM.ed={id:m.id,t:m.t,img,blob:m.photo,strokes:JSON.parse(JSON.stringify(m.strokes||[])),sub:m.sub,tags:m.tags||'',memo:m.memo||'',gpt:m.gpt||'',chk:!!m.chk,tool:'pen',col:0};Z={s:1,x:0,y:0};penSeen=false;rr()},
+  PM.ed={id:m.id,t:m.t,img,blob:m.photo,strokes:JSON.parse(JSON.stringify(m.strokes||[])),sub:m.sub,tags:m.tags||'',memo:m.memo||'',gpt:m.gpt||'',chk:!!m.chk,rot:m.rot||0,tool:'pen',col:0};Z={s:1,x:0,y:0};penSeen=false;rr()},
  async pick(inp){const f=inp.files&&inp.files[0];if(!f)return;try{const {b}=await shrink(f,1600);PM.ed.blob=b;PM.ed.img=await blobImg(b);PM.ed.strokes=[];Z={s:1,x:0,y:0};G.render()}catch(e){alert('이 사진은 열 수 없어요 😢 다른 사진으로 해 볼까?')}},
  tool(t,c){PM.ed.tool=t;if(c!=null)PM.ed.col=c;document.querySelectorAll('.pm-tool button').forEach(b=>b.classList.remove('on'));const bs=[...document.querySelectorAll('.pm-tool button')];(t=='pen'?bs[c||0]:t=='hl'?bs[3]:bs[4]).classList.add('on')},
+ rot(){const e=PM.ed;if(!e||!e.img)return;const w=e.img.width,h=e.img.height,c=document.createElement('canvas');c.width=h;c.height=w;const x=c.getContext('2d');x.translate(h,0);x.rotate(Math.PI/2);x.drawImage(e.img,0,0);
+  e.strokes.forEach(s=>{s.pts=s.pts.map(p=>[h-p[1],p[0],p[2]])});e.img=c;e.rot=((e.rot||0)+90)%360;e.rotated=1;e.dirty=1;Z={s:1,x:0,y:0};G.render()},
  undo(){if(PM.ed&&PM.ed.strokes.length){PM.ed.strokes.pop();redraw()}},
  fit(){Z={s:1,x:0,y:0};applyZ()},
  v(k,val){if(PM.ed)PM.ed[k]=val},
- async save(){const e=PM.ed;if(!e.img){alert('사진을 먼저 넣어 줘! 📷');return}
-  try{db=db||await open();const th=await thumb();const m={id:e.id||('pm'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),t:e.t||Date.now(),u:Date.now(),sub:e.sub,tags:e.tags.trim(),memo:e.memo,gpt:e.gpt,chk:!!e.chk,photo:e.blob,strokes:e.strokes,thumb:th};
+ async save(){const e=PM.ed;if(!e||e.saving)return;if(!e.img){alert('사진을 먼저 넣어 줘! 📷');return}e.saving=1;
+  try{db=db||await open();const th=await thumb();if(e.rotated){e.blob=await new Promise(r=>e.img.toBlob(r,'image/jpeg',.86));e.rotated=0}const m={id:e.id||('pm'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),t:e.t||Date.now(),u:Date.now(),sub:e.sub,tags:e.tags.trim(),memo:e.memo,gpt:e.gpt,chk:!!e.chk,rot:e.rot||0,photo:e.blob,strokes:e.strokes,thumb:th};
    await tx('readwrite',s=>s.put(m));const i=L.findIndex(x=>x.id==m.id);if(i>=0)L[i]=m;else L.unshift(m);if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-   PM.ed=null;toast('사진 메모 저장 완료! 📸✨');rr()}catch(err){alert('저장하지 못했어요 😢 저장 공간을 확인해 줘.')}},
+   PM.ed=null;toast('사진 메모 저장 완료! 📸✨');rr()}catch(err){e.saving=0;alert('저장하지 못했어요 😢 저장 공간을 확인해 줘.')}},
  close(){if(PM.ed&&PM.ed.strokes.length&&PM.ed.dirty&&!confirm('저장하지 않고 닫을까요?'))return;PM.ed=null;rr()},
  async del(){const e=PM.ed;if(!e||!e.id||!confirm('이 사진 메모를 지울까요?'))return;await tx('readwrite',s=>s.delete(e.id));L=L.filter(x=>x.id!=e.id);PM.ed=null;rr()},
  async chk(id){const m=L.find(x=>x.id==id);if(!m)return;m.chk=!m.chk;try{await tx('readwrite',s=>s.put(m))}catch(e){}G.render()},
