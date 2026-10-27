@@ -133,10 +133,10 @@ ks.forEach(k=>{const q=ALL[k],w=S.wrong[k];h+=`<div class="card wn ${w.done?'don
 <div style="margin-top:10px"><button class="btn ${w.done?'sub':''}" onclick="S.wrong['${k}'].done=!S.wrong['${k}'].done;save();render()">${w.done?'↺ 다시 복습 목록으로':'✔ 복습완료'}</button><button class="btn sub" onclick="delete S.wrong['${k}'];save();render()">삭제</button></div></div>`});return h}
 function render(){navR();document.getElementById('app').innerHTML=view=='home'?home():view=='quiz'?(st.ox?oxQuiz():quiz()):view=='mix'?mixView():note()}
 render();
-</script><script src="data/voca.js"></script><script src="data/voca_extra.js" onerror="0"></script><script src="data/voca_extra2.js" onerror="0"></script><script src="data/voca_cp.js" onerror="0"></script><script src="data/voca_ex.js" onerror="0"></script><script src="data/voca_ex_priv.js" onerror="0"></script>
+</script><script src="data/voca.js"></script><script src="data/voca_extra.js" onerror="0"></script><script src="data/voca_extra2.js" onerror="0"></script><script src="data/voca_cp.js" onerror="0"></script><script src="data/voca_irr.js" onerror="0"></script><script src="data/voca_ex.js" onerror="0"></script><script src="data/voca_ex_priv.js" onerror="0"></script>
 <script>
 /* ===== 공무원 영단어 ===== */
-const CPD={601:'전치사 빈출',602:'접속사 빈출',603:'연결사(접속부사)',604:'헷갈리는 쌍 (전치사 vs 접속사)'};const DLB=x=>CPD[x]?CPD[x]:x>500?'생활영어 '+(x-500):x>400?'매일영단어 '+(x-400):x>300?'어원VOCA '+(x-300):x>200?'주간어휘 '+(x-200):x>100?'막강어휘 '+(x-100):'DAY '+x;const VL=(window.VOCA||[]),VK=v=>v.d+'-'+v.w,VM={};VL.forEach(v=>VM[VK(v)]=v);
+const CPD={601:'전치사 빈출',602:'접속사 빈출',603:'연결사(접속부사)',604:'헷갈리는 쌍 (전치사 vs 접속사)',605:'불규칙동사 AAA형',606:'불규칙동사 ABB형',607:'불규칙동사 ABC형',608:'불규칙동사 ABA형',609:'헷갈리는 동사 쌍'};const DLB=x=>CPD[x]?CPD[x]:x>500?'생활영어 '+(x-500):x>400?'매일영단어 '+(x-400):x>300?'어원VOCA '+(x-300):x>200?'주간어휘 '+(x-200):x>100?'막강어휘 '+(x-100):'DAY '+x;const VL=(window.VOCA||[]),VK=v=>v.d+'-'+v.w,VM={};VL.forEach(v=>VM[VK(v)]=v);
 const VDAYS=[...new Set(VL.map(v=>v.d))].sort((a,b)=>a-b);
 S.vc=S.vc||{};S.vw=S.vw||{};S.vq=S.vq||{};S.vday=S.vday||1;S.vsrs=S.vsrs||{};save();
 const DAYMS=864e5,IV=[1,3,7];let vOff=0;const vnow=()=>Date.now()+vOff*DAYMS;
@@ -146,7 +146,7 @@ function vMiss(k,picked){S.vsrs[k]={st:0,due:vStart(vnow())+IV[0]*DAYMS};const w
 function vHit(k){const r=S.vsrs[k];if(!r)return;if(r.due>vStart(vnow())+DAYMS-1)return;r.st++;if(r.st>=IV.length){delete S.vsrs[k];if(S.vw[k])S.vw[k].done=true}else r.due=vStart(vnow())+IV[r.st]*DAYMS}
 const vKeysDay=d=>VL.filter(v=>v.d==d).map(VK);
 function vStat(keys){let kn=0,q=0,qc=0;keys.forEach(k=>{if(S.vc[k]===true)kn++;const r=S.vq[k];if(r){q++;if(r.ok)qc++}});return{kn,q,qc,tot:keys.length,rate:q?Math.round(qc/q*100):0,w:keys.filter(k=>S.vw[k]&&!S.vw[k].done).length}}
-const PN={n:'명',v:'동',a:'형',r:'부',pp:'전',cj:'접',lk:'연결사',pair:'쌍'};
+const PN={n:'명',v:'동',a:'형',r:'부',pp:'전',cj:'접',lk:'연결사',pair:'쌍',irr:'불규칙'};
 const vXx=v=>{const x=(window.VEX||{})[v.w];if(!x||v.g)return '';return `<div style="text-align:left;margin:8px 0;padding:8px 11px;border-radius:12px;background:#faf8ff;border:1px solid #eee6ff;font-size:13px;line-height:1.5;color:#5d5675;word-break:keep-all;overflow-wrap:anywhere">${x[0]?`<div><span class="pill">구문</span> ${esc(x[0])}</div>`:''}${x[1]?`<div style="margin-top:${x[0]?4:0}px;font-family:Georgia,serif;color:#3f3a55">✎ ${esc(x[1])}</div><div style="color:#8a7fa8">${esc(x[2]||'')}</div>`:''}</div>`};
 const vGx=v=>v.g?`<div class="vp-box" style="text-align:left;margin:10px 0;padding:10px 12px;border-radius:14px;background:#faf6ff;border:1px solid #e5dbff;font-size:14px;line-height:1.55"><div><span class="pill">문법</span> ${esc(v.g)}</div>${v.pr?`<div><span class="pill">짝</span> ${esc(v.pr)}</div>`:''}${v.ex?`<div style="margin-top:4px;font-family:Georgia,serif">✎ ${esc(v.ex)}</div><div style="color:#8a7fa8">${esc(v.ek||'')}</div>`:''}${v.pt?`<div style="margin-top:4px;color:#c2386b">📌 ${esc(v.pt)}</div>`:''}</div>`:'';
 let vst=null;
